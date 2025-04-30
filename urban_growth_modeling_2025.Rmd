@@ -145,7 +145,7 @@ aggregateRaster <- function(inputRasterList, theFishnet) {
 
 ```{r}
 charlotteMSA <- 
-  st_read("INSERT GITHUB LINK TO CHARLOTTE MSA STUDY AREA") %>%
+  st_read("https://github.com/austinrs25/CPLN-Urban-Growth-Modeling/blob/main/charlotteMSA.shp") %>%
   st_transform(2264)
 ```
 ## 2.2. Load Land Cover for t1 and t2
@@ -448,13 +448,8 @@ Recall, you will need a census API key to download the census data which must be
 
 Load your census API key by pasting it into the code block below with the function `census_api_key`
 
-```{r load_key_hide, warning= FALSE, include=FALSE}
-census_key <- read.table("~/GitHub/census_key.txt", quote="\"", comment.char="")
-census_api_key(census_key[1] %>% as.character(), overwrite = TRUE)
-```
-
 ```{r load_key, warning = FALSE, eval = FALSE}
-census_api_key("YOUR KEY GOES HERE", overwrite = TRUE)
+census_api_key("e79f3706b6d61249968c6ce88794f6f556e5bf3d", overwrite = TRUE)
 ```
 
 First data we pull population data for `t1` and reproject it to the same crs as our study fishnet - `charlotteMSA_fishnet`.
@@ -479,11 +474,10 @@ acs_vars <- c("B02001_001E")
 charlottePop11 <- get_acs(geography = "tract", 
                         variables = acs_vars, 
                         year = 2011,
-                        state = 48, 
+                        state = 37, 
                         geometry = TRUE, 
                         output = "wide",
-                        county=c("Harris COunty","San Jacinto","Montgomery","Liberty","Waller",
-                         "Austin","Chambers","Fort Bend","Brazoria","Galveston")) %>%
+                        county=c("Mecklenburg","Union","Cabarrus","Gaston")) %>%
                 dplyr::select (GEOID, NAME, acs_vars) %>%
                 rename(pop_2011 = B02001_001E) %>%
                 st_transform(st_crs(charlotteMSA_fishnet)) %>%
@@ -501,11 +495,10 @@ acs_vars <- c("B02001_001E")
 charlottePop19 <- get_acs(geography = "tract", 
                         variables = acs_vars, 
                         year = 2019,
-                        state = 48, 
+                        state = 37, 
                         geometry = TRUE, 
                         output = "wide",
-                        county=c("Harris COunty","San Jacinto","Montgomery","Liberty","Waller",
-                         "Austin","Chambers","Fort Bend","Brazoria","Galveston")) %>%
+                        county=c("Mecklenburg","Union","Cabarrus","Gaston")) %>%
                 dplyr::select (GEOID, NAME, acs_vars) %>%
                 rename(pop_2019 = B02001_001E) %>%
                 st_transform(st_crs(charlotteMSA_fishnet)) %>%
