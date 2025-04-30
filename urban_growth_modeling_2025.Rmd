@@ -27,127 +27,17 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 </style>
 
-
-_There is a very cool lineage for this class module. It is inspired by the California Urban Futures Model, developed by Prof. Emeritus John Landis as what he called a "reduced form" model. Prof Landis taught his version of this methodology when I was his student. Years later, I team-taught this class with the late Prof. Ken Steif, who was another student of John's. We adapted the approach to be done in R, and use more explicitly spatial features. Ken wrote about it in an unpublished chapter from his book "Public Policy Analytics". I include some of Ken's unpublished writing here in its original form._
-
-_This workflow will form the backbone of your fifth and final assignment for CPLN 6750. You will build a growth model based on a logistic regression that predicts the probability of land cover change across space over a specified time interval. Land cover change is hypothesized here to be a function of a) Existing land cover, b) The location of infrastructure and c) Demographic and economic spatial variables._
-
-_For the first time in this class, you will have the option of conducting this workflow entirely in R._
-
-_Thanks very much to Jenna Epstein for editing this material._
-
-_Michael Fichman, March, 2025_
-
-
 # 1. Introduction
 
-*"Patterns of regional development emerge from the autonomous decisions of many different agents - including developers, real estate buyers and tenants as well as planners and regulators. Each of these groups optimize for a different set of bottom lines. Developers seek profit, buying land at a low price, improving on that land, and selling it at a premium. Households and firms consume housing and commercial real estate balancing price constraints with access to amenities and customers, respectively.*
-
-*"Planners regulate development by trading-off economic growth with the mitigation of negative externalities toward the goal of economic and environmental sustainability. Houston, the focus of this chapter, is a case study in managing these trade-offs. A sprawling Metropolitan area larger than the state of New Jersey, Houston’s laissez-faire approach to planning was exploited in the wake of Hurricane Harvey which ultimately cost the region $125 billion. Out of concern for either safety, economic necessity or both, climate change is forcing cities like Houston to reconsider the role of land use planning.*
-
-*"Land use planning that is both economically productive and sustainable requires both supply and demand-side insights. Specifically, the Planner must understand future demand for development and how that demand contrasts with the supply of environmentally sensitive land. The goal of this chapter is to model this interplay....*
-
-*"At the center of our model is a hypothesis that development demand must in part, be a function of the pattern of existing development. Development occurs where the market believes a higher and better use may bring an investment return. In the case of sprawling region like Houston, assuming the requisite demand, there is a clear return on investment for converting farmland to suburban housing.*
-
-*"The traditional ‘bid-rent’ economic model of development posits that development demand is a function of accessibility. This model works well in cities where centralized locations offer the most accessibility. However, it assumes that all consumers of land share the same preferences for central city access. While urban land is valuable, contemporary urbanism in regions like Houston show us that suburban locations can be quite desirable as well.*
-
-*"Why is that? Hinterland locations do not offer direct access to jobs and cultural amenities. Instead, residents trade-off accessibility for larger lots and bigger homes; as well as a bundle of public services like school quality. Developers are attracted to suburban and exurban locations because of cheap land on ‘greenfield’ sites like farms and open space.*
-
-*"The demand for greenfield development can vary substantially depending on the existing spatial configuration of development. If accessibility to central locations was the only underlying consideration, developers would sprawl directly out to the periphery... As a space/time process, this would look much like spilled milk, emanating from a central point outward across the kitchen table.*
-
-*"Another option for developers is to move beyond the periphery onto greenfield sites that are cheaper because they are even less accessible. In this case, the space/time process looks small ‘patches’ of new development dotting the landscape and “leapfrogging” from one greenfield to the next. The economic incentive is to always develop beyond the periphery, where land is cheapest. There are some real costs to this model however. For one, when development is so diffuse, it is more burdensome to efficiently deploy infrastructure like roads, sewers and electicity. Second, leapfrog development fragments natural areas reducing biodiversity and stressing the natural habitat of species that need continuous open space to thrive.*
-
-*"In Houston, as in many sprawling regions of the U.S. the economic incentives that underlie sprawl likely encourage both the accessibility and leapfrog models of development. For our purposes however, features must be created to associate these patterns with development. Without them, the model may lack the appropriate spatial experience on which to forecast growth.*
-
-*"To keep it simple, we develop features associated with accessibility-based patterns. In reality, the analyst should develop a series of applicable features and test which best associate with the outcome of interest. The problem becomes infinitely more difficult when one realizes that sprawl patterns may differ throughout the study area - if for instance, land use restrictions varied by county. Below we estimate models using logistic regression, but higher level machine learning algorithms, most notably, Random Forest, are more adept at dealing with non-linearities across space.*
-
-*- Ken Steif, 2019*
-
-We want to create a model that is accurate, but also useful. How can a forecast inform our planning intelligence? Can we understand where sensitive lands might be at risk? Can we understand where interventions - such as upzoning - might allow us to accommodate likely demand while minimizing sprawl? Can we estimate the impacts of new infrastructure before it's built? We will generate a basic model that will let us analyze alternative futures and think about interventions to shape that future.
+*Insert introduction here*
 
 # 1.2. The Workflow
 
-The goal of this analysis is to predict the likelihood of land cover change in the Houston MSA from *undeveloped* to *developed* over a certain time interval based on demographic, infrastructural, and environmental information from a baseline year roughly ten years previous (*t1*). We train a binomial logit model using information from year *t1* and project land cover changes over a roughly ten year interval for year *t2*. By feeding identical independent variables for year *t2* to your model, you can forecast a land use pattern for a future year *t3*.
-
-While we have used logistic regression to model spatial phenomena like flooding before, this workflow is different in that we wrangle raster data in R rather than doing it in ArcGIS. **You ABSOLUTELY do not need to master the code in detail, but rather, you should understand what it does operationally, and think about how you can plug in new data from a different time window, in a different geographic context.**
-
-Land cover rasters are not available for all years, so the analysis shown here uses an eight year window - 2011 (*t1*) to 2019 (*t2*) to generate forecasts for 2027 (*t3*).
-
-**The analytical workflow is as follows:**
-
-1. **Import land cover rasters for the study area MSA in time periods t1 and t2**.
-
-2. **Resample** the rasters to reduce the resolution to something that is manageable for processing on your computer.
-
-3. **Reclassify** these rasters into *developed* and *undeveloped* land cover categories. Use map algebra to identify areas that were undeveloped in base year *t1* that were developed in *t2* - reclassify these as `1` - our outcome of interest.
-
-4. **Create a "fishnet" grid** for our study area (grid cell polygons), and summarize our raster information into these fishnet cells. Each cell is now a row, with columns for our dependent variable `development_change` (conversion to developed) and our independent variables, which we will engineer in subsequent steps.
-
-5.**Engineer variables** that you hypothesize are **independent predictors of the likelihood a grid cell converts from undeveloped to developed between *t1* and *t2*. **
-
-The variables used in this workflow include distance to the nearest highway (using `tigris` data on highways), the *spatial lag of development* e.g. the nearness to the closest developed fishnet cell, and census variables including population density.
-
-Build identical variables for *t1* and *t2* - you will need the *t2* data to make your projections for *t3*.
-
-6. **Conduct exploratory analysis** to see what independent variables might be correlated with `development_change` and to examine the data set for spatial patterns that might provide clues about feature engineering.
-
-7. Split your data into training and testing sets and **train a binomial logistic regression model** using *t1* data that can predict `development_change`.
-
-8. **Validate your model** by examining errors in your test set using a confusion matrix, ROC curve, plots and maps.
-
-9. **Optimize the model for accuracy and generalizability** through feature engineering, feature selection, and changes to your classification threshold.
-
-10. **Output a forecast** of future development using your final model and variables from *t2*
-
-11. **Interpret and analyze your forecast** using your domain expertise in planning. This includes an analysis of projected development on sensitive lands and a detail of forecasts by county. This is a precursor to any planning or policy action regarding infrastructure, zoning, preservation, incentives or other tools.
-
-# 1.3. Alternative Workflow Notes for ArcGIS
-
-This document functions as a template for a class assignment in CPLN 6750 - different student teams might choose to build spatial features with ArcGIS. The workflow would function in the same way as described in the previous section - loading in two time periods of land cover data, reclassifying it, identifying change, and then summarizing to a fishnet. You can calculate distance to highways, spatial lag to nearest developed cell, and other spatial variables in ArcGIS.
-
-However, you will need to bring your data from *t1* and *t2* into R in fishnet form in order to run your logistic regression models. In this case, bring your data into R in step 10 "Creating Our Data Set for Modeling".
+*Explain workflow here*
 
 # 1.4. Setup - Loading Libraries and Functions
 
-Below we load the libraries needed for the analysis. A set of palette colors are also specified.
-
-The packages are as follows
-
-- tidyverse - The main data wrangling and visualization packages including dplyr and ggplot2
-
-- sf - The core R-based vector GIS package
-
-- raster - A raster GIS package - this package doesn't always use the "tidy" syntax we are used to. `terra` is the main competitor for raster work in R - if you don't like `raster`, try it out.
-
-- kableExtra - a package that makes nice readable tables in R Markdown
-
-- tidycensus - a package for calling census data from the US Census API
-
-- tigris - a library for calling US Census Bureau vector GIS data
-
-- FNN - a spatial point-pattern analysis package that we use for K-nearest neighbor
-
-- caret - a package used for applied predictive modeling
-
-- yardstick - a package for summarizing model performance
-
-- plotROC - a tool to plot ROC curves, a diagnostic for logistic regression
-
-- ggrepel - graphics package to handle labels in ggplot2
-
-- pROC - a package to analyze ROC curves
-
-- grid - graphics package to display multiple plots in one visualization
-
-- gridExtra - a package used to make small multiple arrangements of ggplots
-
-- viridis - A library with nice color ramps for our charts and maps.
-
-- igraph - A package for network analysis
-
-- mapview - A quick web mapping package that can handle sf and raster data
-
-- FedData - A package for accessing federal satellite imagery via API
+*Explain loading libraries*
 
 ```{r load_packages, message=FALSE, warning=FALSE, results = "hide"}
 library(tidyverse)
@@ -176,19 +66,7 @@ palette10 <- c("#f7fcf0","#e0f3db","#ccebc5","#a8ddb5","#7bccc4",
                "#4eb3d3","#2b8cbe","#0868ac","#084081","#f7fcf0")
 ```
 
-We will also load several functions that are custom built for use in this workflow: 
-
-`quintileBreaks` takes a dataframe and a column name and outputs the quintile breaks, helping shorten the below `ggplot` calls.
-
-`xyC` quickly plots sf polygons by converting a fishnet into a dataframe of grid cell centroid coordinates that can be plotted using `geom_point`.
-
-`rast` quickly converts raster objects in R into data frames for quick plotting in `ggplot`
-
-`nn_function` measures the distance from one `sf` point object to its k-nearest-neighbors from another `sf` point object
-
-`aggregateRaster`loops through a list of rasters, converts the each raster to points, filters only points that have value of `1` (ie. is the _ith_ land cover type), and then aggregates to the fishnet.
-
-The following code block loads these functions:
+*Explain loading functions and creating empty fishnet*
 
 ```{r, warning = FALSE, message = FALSE}
 #this function converts a column in to quintiles. It is used for mapping.
@@ -259,45 +137,25 @@ aggregateRaster <- function(inputRasterList, theFishnet) {
   }
 ```
 
-## 1.5. A Note About Census Data
-
-As of this writing, in April of 2025, there has been recent inconsistent service with the US Census API's tigerline geometries. This has affected the `tidycensus` and `tigris` packages. If you experience issues using tidycensus or tigris, refer to the "issues" section of the respective packages github pages to see if your error is being discussed and troublehot.
-
-If you get the following error, this means the API is down:
-
-`The source could be corrupt or not supported. See `st_drivers()` for a list of supported formats.`
-
-The way to solve this is to uninstall tidycensus and tigris, and install a "patched" version of `tigris` direct from developer Kyle Walker's github repo using the `devtools` package. Then you reinstall tigris first, and tidycensus second. The patched version of tigris will get the data from the Census FTP server instead of the API. [There is a quick code vignette I've created to walk you through this](https://github.com/mafichman/CPLN_675/blob/main/misc/tigris_patch.R).
-
 # 2. Loading LC and MSA data
 
 ## 2.1. Load the study area MSA
 
-Our study area is the Houston MSA. We can `st_read` a spatial data object directly from Github, where we have our class data hosted.
-
-We `st_transform` it to the 2278 coordinate reference system, which is appropriate for Houston and has a linear unit in feet.
-
-For your assignment, you will want to load in data using `tigris` or `tidycensus` for your study area of choice in this step. You might do this by loading the counties that comprise your area, and using `st_union` to turn them all into one shape.
+*Explain loading study area and coordinate system*
 
 ```{r}
-houstonMSA <- 
-  st_read("https://raw.githubusercontent.com/mafichman/CPLN_675/main/Week_14_15/data/UGB_Chapter_data/houston_MSA.geojson") %>%
-  st_transform(2278)
+charlotteMSA <- 
+  st_read("INSERT GITHUB LINK TO CHARLOTTE MSA STUDY AREA") %>%
+  st_transform(2264)
 ```
 ## 2.2. Load Land Cover for t1 and t2
 
-We can use a direct API call to import raster data of interest directly into R.
-
-The `get_nlcd` function from the package `FedData` can be used to fetch National Land Cover Database rasters from [www.mrlc.gov](www.mrlc.gov) and then crop it to a `template` that is a `sf` shape that you specify as the boundary for your call. For our template, we will use the `houstonMSA`.
-
-There aren't NLDD available for every year, so we will use 2011 and 2019 data as our *t1* and *t2*, respectively. 
-
-This code block uses the `raster` function creates a data object of `Formal class RasterLayer`
+*Explain loading landcover*
 
 ```{r}
 
 lc_2011 <- get_nlcd(
-    template = houstonMSA,
+    template = charlotteMSA,
     label = "lc_2011",
     year = 2011
   ) %>%
@@ -310,7 +168,7 @@ lc_2011 <- get_nlcd(
 ```{r}
 
 lc_2019 <- get_nlcd(
-    template = houstonMSA,
+    template = charlotteMSA,
     label = "lc_2019",
     year = 2019
   ) %>%
@@ -318,28 +176,13 @@ lc_2019 <- get_nlcd(
 
 ```
 
-Let's look at some info about these rasters. By typing the name of our data object(s) into the console, we can see what the classes are, their ID numbers, and the fact that they are 30m grid cells.
-
-Recall that the NLCD has numerical classifications for land cover types.
-
-```{r}
-lc_2019
-```
-
 # 3. Detecting Land Cover Conversion
 
-We have rasters representing land cover in `t1` and `t2` - we want to detect areas where land converted from undeveloped to developed - those cells represent the "1" in the logit model we will develop, and we want to train a model to estimate the likelihood any given cell will be a "1".
-
+*Text to explain land cover conversion*
 
 ## 3.1. Resampling Rasters
 
-We want to resample our rasters to make the resolution much coarser (e.g make the cells much larger). At 30m, trust me, they will crush our laptops when we try to process stuff.
-
-Let's resample them to be 30x coarser resolution. You will make your own resampling deliberation when you do this analysis yourself for your homework. The resolution depends a lot on your study area size, but standard laptop computers are probably best suited to handle thousands or low-tens-of-thousands cells as we build our fishnets and start mapping and modeling.
-
-The `aggregate` function from the `raster` package is used for resampling. We create two new `RasterLayer` data sets with the appendage `_rs` in their name to denote that they are resampled.
-
-Specifying `fun = "modal"` is most appropriate for categorical data like land cover, extracting the modal value of the cells that are being aggregated together. (You can use means, maxima, and other stats for this argument too).
+*Explain resampling to reduce raster resolution*
 
 ```{r}
 lc_2011_rs <- aggregate(lc_2011, fact = 30, fun = "modal")
@@ -350,9 +193,7 @@ lc_2019_rs <- aggregate(lc_2019, fact = 30, fun = "modal")
 
 ## 3.2. Reclassifying As Developed and Undeveloped
 
-In order to figure out which cells are developed or undeveloped, and subsequently identify the ones that were developed between *t1* and *t2*, we need to reclassify our land cover data to consist of 1 and 0 observations (e.g. 1 is the developed classes 13-24, 0 is everything else). Check section 2.2 if you want to see which codes correspond to which numbers in the NLCD.
-
-We create a matrix called `reclassMatrix` with reclassification instructions for the `reclassify` function in the `raster` package.
+*Explain reclassification as developed and undeveloped*
 
 ```{r}
 reclassMatrix <- 
@@ -375,9 +216,7 @@ developed_2019 <-
 ```
 
 
-We can do some map algebra to find the places where land cover changed. 
-
-Notice we can do map algebra really simply with the `raster` package by merely writing an equation. This is similar to how we do it in ArcGIS.
+*Map algebra explained: where did land cover change?*
 
 
 ```{r, warning = FALSE, message = FALSE}
@@ -386,7 +225,7 @@ development_change <- developed_2011 + developed_2019
 
 ```
 
-Let's see a quick histogram of the values - these should range from 0 (undeveloped in 2001, undeveloped in 2011), 1 (undeveloped in 2001, developed in 2011 (presuming nothing went from developed to undeveloped)), and 2 (developed in both periods). 
+*histogram shows frequency of change from undeveloped to developed between 2011 and 2019*
 
 The 1's represent the change.
 
@@ -394,7 +233,7 @@ The 1's represent the change.
 hist(development_change)
 ```
 
-We can turn any of the 0's and 2's to NA, leaving only 1's and NA.
+*remove 2's and 0's*
 
 ```{r, warning = FALSE, message = FALSE}
 development_change[development_change != 1] <- NA
@@ -402,7 +241,7 @@ development_change[development_change != 1] <- NA
 
 ## 3.3. Examining Land Cover Change
 
-Let's use Mapview to take a look at the `development_change` raster (yes you can make a quick webmap of these rasters - easy!)
+*view land cover change raster on map*
 
 ```{r}
 mapView(development_change)
@@ -411,28 +250,16 @@ mapView(development_change)
 
 # 4. Creating the Fishnet
 
-We will do our modeling in a "fishnet" - a vector grid which is uniform and raster-like. Each cell has a row in a table - we will need a data frame object to feed to our modeling workflow. We will create our fishnet at the same resolution (e.g. cell size) and CRS as our raster data
-
-The `st_make_grid` function can do this for us by making a fishnet called `houstonMSA_fishnet` at the scale of our `houstonMSA` - our study area. Note the following things that we do in this function.
-
-We `st_transform` the `houstonMSA` to the crs of `development_change` - that's the basis for our grid.
-
-We set `cellsize` argument the `res` (aka resolution) of `development_change`.
-
-Use the `st_sf` function to ensure that our data are in `sf` format (the st_make_grid function returns a different kind of spatial object by devault)
-
-We "clip" the grid to the `houstonMSA` using `st_intersection` - making sure that the MSA data contain only the geometry, projected in the same crs as `development_change`.
-
-And then `mutate` a column in our data set called `uniqueID` - we will need to have a unique ID for each row in our data in case we need to make some tabular joins.
+*Explain fishnet creation*
 
 ```{r, warning = FALSE, message = FALSE}
-houstonMSA_fishnet <- 
-  st_make_grid(houstonMSA %>%
+charlotteMSA_fishnet <- 
+  st_make_grid(charlotteMSA %>%
                      st_transform(crs(development_change)),
                  cellsize = res(development_change)[1], 
                  square = TRUE) %>% 
   st_sf() %>% 
-  st_intersection(., houstonMSA %>%
+  st_intersection(., charlotteMSA %>%
                     dplyr::select(geometry) %>%
                          st_transform(crs(development_change))) %>%
   mutate(uniqueID = rownames(.))
