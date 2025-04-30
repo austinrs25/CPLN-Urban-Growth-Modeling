@@ -618,7 +618,7 @@ First highway vectors (`primary_roads`) are downloaded from the `Tigris` package
 
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
 charlotteHighways <-
-  tigris::primary_secondary_roads(state = "TX") %>%
+  tigris::primary_secondary_roads(state = "NC") %>%
   st_transform(st_crs(charlotteMSA)) %>%
   st_intersection(charlotteMSA) %>%
   st_transform(st_crs(fishnet))
