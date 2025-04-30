@@ -145,8 +145,8 @@ aggregateRaster <- function(inputRasterList, theFishnet) {
 
 ```{r}
 charlotteMSA <- 
-  st_read("https://github.com/austinrs25/CPLN-Urban-Growth-Modeling/blob/main/charlotteMSA.shp") %>%
-  st_transform(2264)
+  st_read("https://raw.githubusercontent.com/austinrs25/CPLN-Urban-Growth-Modeling/refs/heads/main/charlotteMSA.geojson") 
+charlotteMSA %>% st_transform(2264)
 ```
 ## 2.2. Load Land Cover for t1 and t2
 
