@@ -267,23 +267,11 @@ charlotteMSA_fishnet <-
 
 # 5. Join Raster Data to the Fishnet
 
-How do we get all of our raster data into the fishnet? How do we get our development change to show up as a 1/0 variable in a given column? In our models we will want to parameterize things like existing land use, or distance to the nearest highway - how do we create columns for those? The simple answer - t we convert our rasters to points, and then spatially join them to our fishnet.
+*Explain joining raster data to fishnet*
 
 ## 5.1. Aggregating LC Change to fishnet
 
-Let's do a single aggregation below to demonstrate the workflow. You can use this workflow to take any kind of raster data you'd like and coerce it to the fishnet. Later we will demonstrate a batch conversion workflow you can use to get all of your land cover rasters in to a fishnet as a group.
-
-The function `rasterToPoints` (from the `raster` package) turns our raster into a centroid with an `x` and `y` coordinate from its native projection. We can turn this into an `sf` object using `st_as_sf` and specifying the crs as that of `houstonMSA_fishnet`.
-
-Then, we create a fishnet called (creatively) `fishnet` - this will be the core grid we use to build our modeling variables. 
-
-We use the `aggregate` function from the `sf` pacakge to summarize the `changePoints` - note that we use the `sum` argument for the `FUN` argument (e.g. "function") - you could use a min, max, mean etc., in this argument. This creates an sf object that has two columns - `layer` - which has values that correspond to those of the raster.
-
-If you were to run the following code - `aggregate(changePoints, houstonMSA_fishnet, FUN=sum) %>% group_by(layer) %>% tally()` you would see a summary of that column. When we run our aggregate function, we get 1's and NAs.
-
-We pipe in a `mutate` command to specify that there is a new column in `fishnet` we'd like to call `development_change`. We populate it with values from an if_else statement - if layer is NA, make it a 0, if it's not, make it a 1. We make sure this is a factor variable.
-
-Then we use a select statement to remove the column `layer`.
+*Explain aggregating landcover change to fishnet*
 
 ```{r}
 changePoints <-
@@ -303,9 +291,7 @@ fishnet <-
 ```
 
 
-How does it look?
-
-Here we make a plot with a little custom function inside our geom_point data - `xyC` turns fishnets into centroids so we can plot them much more quickly than polygons. Fun trick.
+*plot land cover change*
 
 ```{r}
 ggplot() +
@@ -325,11 +311,11 @@ ggplot() +
 
 ## 5.2. Aggregating Batch Land Cover Data to the Fishnet
 
-OK - we will need to reclassify our get all of our land cover data from `t1` and `t2` into a fishnet environment.  Doing that one raster at a time would be very tedious. I'm providing you with a custom function that can help you aggregate large lists of rasters, called `aggregateRaster`
+*Explain aggregating land cover data to put in fishnet*
 
 ### 5.2.1. Reclassifying land cover
 
-We are going to recode our NLCD data into a few reduced categories to be used in our analysis. Here is the classification logic: 
+*Explain simplified classifications* 
 
 | Old_Classification             | New_Classification                                  |
 |--------------------------------|-----------------------------------------------------|
@@ -341,7 +327,7 @@ We are going to recode our NLCD data into a few reduced categories to be used in
 | Water | Water |
 
 
-In the code block below, we create new rasters, descriptively called `developed_2011`, `forest_2011` etc , according to the NLCD codes that correspond to our classification scheme. 
+*Explain new rasters*
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -363,11 +349,7 @@ water_2019 <- lc_2019_rs == 11
 
 ### 5.2.2. Aggregating Rasters to the Fishnet
 
-We have two steps to prepare our rasters for batch aggregation. You should follow this workflow as-is when you build your urban growth model for your assignment.
-
-First, we apply `names` to our rasters. When we aggregate all the rasters, the `names` ensure that when the raster is integrated with the fishnet, the column reflects the appropriate raster.
-
-Second, we generate a list of land cover rasters for 2011, which we call `rasterList_2011`, and a list for 2019, which we call `rasterList_2019`. These are lists of objects that we can feed to `aggregateRaster` to instruct it which data to aggregate to fishnet.
+*Explain creating two lists of rasters, one for each time point*
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -403,9 +385,7 @@ rasterList_2019 <- c(developed_2019,
                    water_2019)
 ```
 
-Lastly, we send our lists (e.g. `rasterList_2011`) and our basic fishnet (`houstonMSA_fishnet`) to `aggregateRaster`, and create new fishnets called `lcRasters_2011` and `lc_Rasters_2019` that have rows for each fishnet cell, and columns with 0/1 values for all of our land cover types.
-
-What this will allow us to do, in the end, is use land cover types as dummy variables in our model - in other words, we can make predictions of a cell's likelihood to develop based on a hypothesized association between a cell's land cover in `t1` (e.g. forest, wetlands etc.,) and it's developability.
+*explain*
 
 
 ```{r, warning = FALSE, message = FALSE}
@@ -434,9 +414,7 @@ lcRasters_2019 <-
 ```
 
 
-We can now plot the aggregated rasters in a facetted fashion and examine them.
-
-Which type of land cover status do you think would be good predictors of development? For example, it would be a reasonable hypothesis that wetlands - due to either their preservation status or their difficulty to excavate - would be associated with a low likelihood of development.
+*Plot aggregated rasters*
 
 ```{r, message = FALSE, warning = FALSE}
 lcRasters_2011 %>%
