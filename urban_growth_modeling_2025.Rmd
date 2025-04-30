@@ -750,8 +750,7 @@ counties <- counties(state = "TX") %>%
   st_transform(st_crs(charlotteMSA_fishnet))
 
 studyAreaCounties <- counties %>%
-  filter(NAME %in% c("Harris","San Jacinto","Montgomery","Liberty","Waller",
-                         "Austin","Chambers","Fort Bend","Brazoria","Galveston"))
+  filter(NAME %in% c("Mecklenburg","Union","Cabarrus","Gaston"))
 
 ```
 
