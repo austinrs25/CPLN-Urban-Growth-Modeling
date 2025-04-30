@@ -278,11 +278,11 @@ changePoints <-
   rasterToPoints(development_change) %>%
   as.data.frame() %>%
   st_as_sf(coords = c("x", "y"), 
-           crs = st_crs(houstonMSA_fishnet))
+           crs = st_crs(charlotteMSA_fishnet))
 
 fishnet <- 
   aggregate(changePoints, 
-            houstonMSA_fishnet, 
+            charlotteMSA_fishnet, 
             FUN=sum) %>%
   mutate(development_change = ifelse(is.na(layer) == TRUE , 0, 1),
          development_change = as.factor(development_change)) %>%
@@ -295,7 +295,7 @@ fishnet <-
 
 ```{r}
 ggplot() +
-  geom_sf(data=houstonMSA %>% 
+  geom_sf(data=charlotteMSA %>% 
             st_transform(crs(fishnet))) +
   geom_point(data=fishnet, 
              aes(x=xyC(fishnet)$x, 
@@ -391,7 +391,7 @@ rasterList_2019 <- c(developed_2019,
 ```{r, warning = FALSE, message = FALSE}
 lcRasters_2011 <-
   aggregateRaster(rasterList_2011, 
-                  houstonMSA_fishnet) %>%
+                  charlotteMSA_fishnet) %>%
   dplyr::select(developed_2011,
                    forest_2011,
                    farm_2011,
@@ -402,7 +402,7 @@ lcRasters_2011 <-
 
 lcRasters_2019 <-
   aggregateRaster(rasterList_2019, 
-                  houstonMSA_fishnet) %>%
+                  charlotteMSA_fishnet) %>%
   dplyr::select(developed_2019,
                    forest_2019,
                    farm_2019,
@@ -423,7 +423,7 @@ lcRasters_2011 %>%
   mutate(X = xyC(.)$x,
          Y = xyC(.)$y) %>%
   ggplot() +
-    geom_sf(data=houstonMSA) +
+    geom_sf(data=charlotteMSA) +
     geom_point(aes(X,Y, colour=as.factor(value))) +
     facet_wrap(~variable) +
     scale_colour_manual(values = palette2,
@@ -457,7 +457,7 @@ census_api_key(census_key[1] %>% as.character(), overwrite = TRUE)
 census_api_key("YOUR KEY GOES HERE", overwrite = TRUE)
 ```
 
-First data we pull population data for `t1` and reproject it to the same crs as our study fishnet - `houstonMSA_fishnet`.
+First data we pull population data for `t1` and reproject it to the same crs as our study fishnet - `charlotteMSA_fishnet`.
 
 In your growth model - you can pull more demographic and economic variables here by adding them to the `acs_vars` list of data that you'd like to call from the Census.
 
@@ -468,15 +468,15 @@ This is a nice dplyr chain that does the following:
 - DL the data, 
 - `select` only the Estimates, NAME, and GEOID column (e.g. removing the margin of error columns)
 - `rename` my variables to be intelligible, 
-- `st_transform` the data to the `houstonMSA_fishnet` crs
+- `st_transform` the data to the `charlotteMSA_fishnet` crs
 - `st_buffer` the geometries a teeny tiny bit (by negative 1 map unit) - this is done because sometimes (only sometimes) you have twisted and broken geometries, and this fixes it. If you don't do this, when we do aerially weighted interpolation, you might get an error.
 
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
 # Specify which variable(s) you would like to grab. Here, only one (Total Population) is listed, but you could add more to the call.
 acs_vars <- c("B02001_001E")
 
-# Using "tract" as the geography and 2011 as the year, download data data for the Houston MSA counties listed.
-houstonPop11 <- get_acs(geography = "tract", 
+# Using "tract" as the geography and 2011 as the year, download data data for the Charlotte MSA counties listed.
+charlottePop11 <- get_acs(geography = "tract", 
                         variables = acs_vars, 
                         year = 2011,
                         state = 48, 
@@ -486,7 +486,7 @@ houstonPop11 <- get_acs(geography = "tract",
                          "Austin","Chambers","Fort Bend","Brazoria","Galveston")) %>%
                 dplyr::select (GEOID, NAME, acs_vars) %>%
                 rename(pop_2011 = B02001_001E) %>%
-                st_transform(st_crs(houstonMSA_fishnet)) %>%
+                st_transform(st_crs(charlotteMSA_fishnet)) %>%
                 st_buffer(-1)
 ```
 
@@ -497,8 +497,8 @@ We do this once more for `t2`, in this case, 2019.
 # Specify which variable(s) you would like to grab. Here, only one (Total Population) is listed, but you could add more to the call.
 acs_vars <- c("B02001_001E")
 
-# Using "tract" as the geography and 2019 as the year, download data data for the Houston MSA counties listed.
-houstonPop19 <- get_acs(geography = "tract", 
+# Using "tract" as the geography and 2019 as the year, download data data for the Charlotte MSA counties listed.
+charlottePop19 <- get_acs(geography = "tract", 
                         variables = acs_vars, 
                         year = 2019,
                         state = 48, 
@@ -508,7 +508,7 @@ houstonPop19 <- get_acs(geography = "tract",
                          "Austin","Chambers","Fort Bend","Brazoria","Galveston")) %>%
                 dplyr::select (GEOID, NAME, acs_vars) %>%
                 rename(pop_2019 = B02001_001E) %>%
-                st_transform(st_crs(houstonMSA_fishnet)) %>%
+                st_transform(st_crs(charlotteMSA_fishnet)) %>%
                 st_buffer(-1)
 ```
 
@@ -520,19 +520,19 @@ One thing worth noting here is that the quantile symbology that we apply probabl
 ```{r, warning = FALSE, message = FALSE, fig.height= 8, fig.width= 11}
 grid.arrange(
 ggplot() +
-  geom_sf(data = houstonPop11, aes(fill=factor(ntile(pop_2011,5))), colour=NA) +
+  geom_sf(data = charlottePop11, aes(fill=factor(ntile(pop_2011,5))), colour=NA) +
   scale_fill_manual(values = palette5,
-                    labels=quintileBreaks(houstonPop11,"pop_2011"),
+                    labels=quintileBreaks(charlottePop11,"pop_2011"),
                    name="Quintile\nBreaks") +
-  labs(title="Population, Houston MSA: 2011") +
+  labs(title="Population, Charlotte MSA: 2011") +
   theme_void(),
 
 ggplot() +
-  geom_sf(data = houstonPop19, aes(fill=factor(ntile(pop_2019,5))), colour=NA) +
+  geom_sf(data = charlottePop19, aes(fill=factor(ntile(pop_2019,5))), colour=NA) +
   scale_fill_manual(values = palette5,
-                    labels=quintileBreaks(houstonPop19,"pop_2019"),
+                    labels=quintileBreaks(charlottePop19,"pop_2019"),
                    name="Quintile\nBreaks") +
-  labs(title="Population, Houston MSA: 2019") +
+  labs(title="Population, Charlotte MSA: 2019") +
   theme_void(), ncol=2)
 ```
 
@@ -550,9 +550,9 @@ The code chunks below perform AWI for our `t1` and `t2` census data using the `s
 
 Here is a breakdown of the workflow so that you can adapt it to use other data sets in your analysis.
 
-- `st_interpolate_aw` takes an sf object (`houstonPop11`), a column name from that sf object (`["pop_2011"]`) and our fishnet `houstonMSA_fishnet`. Leave the argument `extensive=TRUE` as-is.
+- `st_interpolate_aw` takes an sf object (`charlottePop11`), a column name from that sf object (`["pop_2011"]`) and our fishnet `charlotteMSA_fishnet`. Leave the argument `extensive=TRUE` as-is.
 
-- Knowing that our result might have a differing number of cells from the fishnet, we convert this object to centroids (`st_centroid`) and spatially join it to our fishnet using `st_join` - a join initiated from the `houstonMSA_fishnet` object. This finds the points where our AWI results intersect the fishnet cells, and keeps any cells where there is no intersection,
+- Knowing that our result might have a differing number of cells from the fishnet, we convert this object to centroids (`st_centroid`) and spatially join it to our fishnet using `st_join` - a join initiated from the `charlotteMSA_fishnet` object. This finds the points where our AWI results intersect the fishnet cells, and keeps any cells where there is no intersection,
 
 - Lastly, we perform some data cleaning, where we replace NA values (`replace_na`) with zeros, and `select` only our `pop_2011` column to remain.
 
@@ -562,11 +562,11 @@ If you get warning messages about "constant or uniform" geometries - this is jus
 
 ```{r, warning = FALSE, message = FALSE}
 fishnetPopulation11 <-
-  st_interpolate_aw(houstonPop11["pop_2011"], 
-                    houstonMSA_fishnet, 
+  st_interpolate_aw(charlottePop11["pop_2011"], 
+                    charlotteMSA_fishnet, 
                     extensive=TRUE) %>%
   st_centroid() %>%
-  st_join(houstonMSA_fishnet, ., join = st_intersects) %>%
+  st_join(charlotteMSA_fishnet, ., join = st_intersects) %>%
   mutate(pop_2011 = replace_na(pop_2011,0)) %>%
   dplyr::select(pop_2011)
 ```
@@ -576,11 +576,11 @@ We repeat the process for our `t2` data.
 
 ```{r}
 fishnetPopulation19 <-
-  st_interpolate_aw(houstonPop19["pop_2019"],
-                    houstonMSA_fishnet, 
+  st_interpolate_aw(charlottePop19["pop_2019"],
+                    charlotteMSA_fishnet, 
                     extensive=TRUE) %>%
   st_centroid() %>%
-  st_join(houstonMSA_fishnet, ., join = st_intersects) %>%
+  st_join(charlotteMSA_fishnet, ., join = st_intersects) %>%
   mutate(pop_2019 = replace_na(pop_2019,0)) %>%
   dplyr::select(pop_2019)
 ```
@@ -591,11 +591,11 @@ How do these data look when we map them out and compare them to the census vecto
 ```{r, warning = FALSE, message = FALSE, fig.height = 8, fig.width= 11}
 grid.arrange(
 ggplot() +
-  geom_sf(data=houstonPop11, aes(fill=factor(ntile(pop_2011,5))),colour=NA) +
+  geom_sf(data=charlottePop11, aes(fill=factor(ntile(pop_2011,5))),colour=NA) +
   scale_fill_manual(values = palette5,
-                    labels=substr(quintileBreaks(houstonPop11,"pop_2011"),1,4),
+                    labels=substr(quintileBreaks(charlottePop11,"pop_2011"),1,4),
                    name="Quintile\nBreaks") +
-  labs(title="Population, Houston MSA: 2011",
+  labs(title="Population, Charlotte MSA: 2011",
        subtitle="Represented as tracts; Boundaries omitted") +
   theme_void(),
 
@@ -605,7 +605,7 @@ ggplot() +
   scale_fill_manual(values = palette5,
                    labels=substr(quintileBreaks(fishnetPopulation11,"pop_2011"),1,4),
                    name="Quintile\nBreaks") +
-  labs(title="Population, Houston MSA: 2011",
+  labs(title="Population, Charlotte MSA: 2011",
        subtitle="Represented as fishnet gridcells; Boundaries omitted") +
   theme_void(), ncol=2)
 ```
@@ -624,10 +624,10 @@ To manipulate this workflow and include new infrastructure, you can use ArcGIS o
 First highway vectors (`primary_roads`) are downloaded from the `Tigris` package - we project the data and subset it to the study area using `st_intersection`.
 
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
-houstonHighways <-
+charlotteHighways <-
   tigris::primary_secondary_roads(state = "TX") %>%
-  st_transform(st_crs(houstonMSA)) %>%
-  st_intersection(houstonMSA) %>%
+  st_transform(st_crs(charlotteMSA)) %>%
+  st_intersection(charlotteMSA) %>%
   st_transform(st_crs(fishnet))
 ```
 
@@ -637,7 +637,7 @@ Let's make a map and examine the spatial relationship between highways and devel
 ggplot() +
   geom_point(data=fishnet, 
              aes(x=xyC(fishnet)[,1], y=xyC(fishnet)[,2],colour=development_change),size=1.5) +
-  geom_sf(data=houstonHighways) +
+  geom_sf(data=charlotteHighways) +
   scale_colour_manual(values = palette2,
                       labels=c("No Change","New Development")) +
   labs(title = "New Development and Highways",
@@ -647,7 +647,7 @@ ggplot() +
 
 ## 7.2. Calcuate Distance to Highways
 
-We can create a new fishnet variable called `distance_highways_2011` by turning our `houstonMSA_fishnet` into centroid points and calculating the distance from each cell centroid to the nearest highway segment. This is done in a `mutate` command that utilizes the `st_distance` function to run this distance calculation for each observation.
+We can create a new fishnet variable called `distance_highways_2011` by turning our `charlotteMSA_fishnet` into centroid points and calculating the distance from each cell centroid to the nearest highway segment. This is done in a `mutate` command that utilizes the `st_distance` function to run this distance calculation for each observation.
 
 We join these observations back to a fishnet, and the result is a grid called `highwayPoints_fishnet` with a column called `distance_highways_2011`.
 
@@ -658,13 +658,13 @@ This analysis operates on the *assumption* that the transporation network in `t2
 *If you are trying to input a different set of transportation infrastructure as the basis for your future projection for t3 - you will want to import this new network info at this step and create an alternative `highwayPoints_fishnet_2019` (or whatever name represents t2 in your analysis). This information will be an important variable in your model that you use to project future development change.*
 
 ```{r, warning = FALSE, message = FALSE}
-highwayPoints_fishnet_2011 <- houstonMSA_fishnet %>%
+highwayPoints_fishnet_2011 <- charlotteMSA_fishnet %>%
   st_centroid() %>%
-  mutate(distance_highways_2011 = as.numeric(st_distance(., st_union(houstonHighways) %>% 
-                                                      st_transform(st_crs(houstonMSA_fishnet))))) %>%
+  mutate(distance_highways_2011 = as.numeric(st_distance(., st_union(charlotteHighways) %>% 
+                                                      st_transform(st_crs(charlotteMSA_fishnet))))) %>%
   as.data.frame() %>% 
   dplyr::select(-geometry) %>% 
-  left_join(houstonMSA_fishnet, .) %>% 
+  left_join(charlotteMSA_fishnet, .) %>% 
   st_as_sf()
 
 highwayPoints_fishnet_2019 <- highwayPoints_fishnet_2011 %>%
@@ -675,14 +675,14 @@ highwayPoints_fishnet_2019 <- highwayPoints_fishnet_2011 %>%
 ```{r, warning = FALSE, message = FALSE}
 
 ggplot() +
-  geom_sf(data=houstonMSA %>% st_transform(st_crs(highwayPoints_fishnet_2011))) +
+  geom_sf(data=charlotteMSA %>% st_transform(st_crs(highwayPoints_fishnet_2011))) +
   geom_point(data=highwayPoints_fishnet_2011, aes(x=xyC(highwayPoints_fishnet_2011)[,1], 
                                              y=xyC(highwayPoints_fishnet_2011)[,2], 
                  colour=factor(ntile(distance_highways_2011,5))),size=1.5) +
   scale_colour_manual(values = palette5,
                       labels=substr(quintileBreaks(highwayPoints_fishnet_2011,"distance_highways_2011"),1,8),
                       name="Quintile\nBreaks") +
-  geom_sf(data=houstonHighways, colour = "red") +
+  geom_sf(data=charlotteHighways, colour = "red") +
   labs(title = "Distance to Highways (m)",
        subtitle = "As fishnet centroids; Highways visualized in red") +
   theme_void()
@@ -730,7 +730,7 @@ fishnet$lagDevelopment_2019 <-
 
 ```{r, warning = FALSE, message = FALSE}
 ggplot() +
-  geom_sf(data=houstonMSA %>% st_transform(st_crs(fishnet))) +
+  geom_sf(data=charlotteMSA %>% st_transform(st_crs(fishnet))) +
   geom_point(data=fishnet, 
              aes(x=xyC(fishnet)[,1], y=xyC(fishnet)[,2], 
                  colour=factor(ntile(lagDevelopment_2011,5))), size=1.5) +
@@ -754,7 +754,7 @@ options(tigris_class = "sf")
 
 counties <- counties(state = "TX") %>%
   st_as_sf() %>%
-  st_transform(st_crs(houstonMSA_fishnet))
+  st_transform(st_crs(charlotteMSA_fishnet))
 
 studyAreaCounties <- counties %>%
   filter(NAME %in% c("Harris","San Jacinto","Montgomery","Liberty","Waller",
@@ -765,12 +765,12 @@ studyAreaCounties <- counties %>%
 We can spatially join the `studyAreaCounties` object to our fishnet and create a `countyFishnet` where each cell is imparted with the name of the county it belongs to.
 
 ```{r}
-countyFishnet <- houstonMSA_fishnet %>%
+countyFishnet <- charlotteMSA_fishnet %>%
   st_join(., studyAreaCounties %>%
             dplyr::select(NAME)) %>%
   as.data.frame() %>% 
   dplyr::select(uniqueID, NAME) %>% 
-  left_join(houstonMSA_fishnet, .) %>% 
+  left_join(charlotteMSA_fishnet, .) %>% 
   st_as_sf() %>%
   group_by(uniqueID) %>%
   slice(1) %>%
