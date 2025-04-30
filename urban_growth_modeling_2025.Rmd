@@ -478,7 +478,7 @@ charlottePop11 <- get_acs(geography = "tract",
                         state = 37, 
                         geometry = TRUE, 
                         output = "wide",
-                        county=c("Mecklenburg")) %>%
+                        county=c("Mecklenburg", "Cabarrus", "Gaston", "Union")) %>%
                 dplyr::select (GEOID, NAME, acs_vars) %>%
                 rename(pop_2011 = B02001_001E) %>%
                 st_transform(st_crs(charlotteMSA_fishnet)) %>%
@@ -499,7 +499,7 @@ charlottePop19 <- get_acs(geography = "tract",
                         state = 37, 
                         geometry = TRUE, 
                         output = "wide",
-                        county=c("Mecklenburg")) %>%
+                        county=c("Mecklenburg", "Cabarrus", "Gaston", "Union")) %>%
                 dplyr::select (GEOID, NAME, acs_vars) %>%
                 rename(pop_2019 = B02001_001E) %>%
                 st_transform(st_crs(charlotteMSA_fishnet)) %>%
@@ -753,7 +753,7 @@ counties <- counties(state = "NC") %>%
   st_transform(st_crs(charlotteMSA_fishnet))
 
 studyAreaCounties <- counties %>%
-  filter(NAME %in% c("Mecklenburg"))
+  filter(NAME %in% c("Mecklenburg", "Cabarrus", "Gaston", "Union"))
 
 ```
 
