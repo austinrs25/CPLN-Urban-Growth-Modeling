@@ -745,7 +745,7 @@ We can get data on counties from the US Census Bureau via the `tigris` package, 
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
 options(tigris_class = "sf")
 
-counties <- counties(state = "TX") %>%
+counties <- counties(state = "NC") %>%
   st_as_sf() %>%
   st_transform(st_crs(charlotteMSA_fishnet))
 
