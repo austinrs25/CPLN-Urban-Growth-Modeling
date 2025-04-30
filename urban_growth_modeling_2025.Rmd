@@ -1,6 +1,6 @@
 ---
 title: "CPLN 6750 - Urban Growth Modeling Assignment, Spring 2025"
-author: "Abe Doroshow & Austin Studner-Sutherland"
+author: "Abe Doroshow & charlotte Studner-Sutherland"
 date: "5/10/2025"
 output:
   html_document:
@@ -145,7 +145,7 @@ aggregateRaster <- function(inputRasterList, theFishnet) {
 
 ```{r}
 charlotteMSA <- 
-  st_read("https://raw.githubusercontent.com/austinrs25/CPLN-Urban-Growth-Modeling/refs/heads/main/charlotteMSA.geojson") 
+  st_read("https://raw.githubusercontent.com/charlotters25/CPLN-Urban-Growth-Modeling/refs/heads/main/charlotteMSA.geojson") 
 charlotteMSA %>% st_transform(2264)
 ```
 ## 2.2. Load Land Cover for t1 and t2
@@ -554,28 +554,30 @@ Keep an eye on how many cells your fishnets have throughout the process - if you
 If you get warning messages about "constant or uniform" geometries - this is just the `sf` package reminding you to be on your p's and q's about projections - it won't protect you if your projections don't match!
 
 ```{r, warning = FALSE, message = FALSE}
-fishnetPopulation11 <-
-  st_interpolate_aw(charlottePop11["pop_2011"], 
-                    charlotteMSA_fishnet, 
-                    extensive=TRUE) %>%
-  st_centroid() %>%
-  st_join(charlotteMSA_fishnet, ., join = st_intersects) %>%
-  mutate(pop_2011 = replace_na(pop_2011,0)) %>%
-  dplyr::select(pop_2011)
+pop_interp <- st_interpolate_aw(charlottePop11["pop_2011"], 
+                                 charlotteMSA_fishnet, 
+                                 extensive = TRUE)
+
+pop_vec <- rep(NA_real_, nrow(charlotteMSA_fishnet))
+pop_vec[match(st_geometry(pop_interp), st_geometry(charlotteMSA_fishnet))] <- pop_interp$pop_2011
+
+fishnetPopulation11 <- charlotteMSA_fishnet %>%
+  mutate(pop_2011 = replace_na(pop_vec, 0))
 ```
 
 We repeat the process for our `t2` data.
 
 
 ```{r}
-fishnetPopulation19 <-
-  st_interpolate_aw(charlottePop19["pop_2019"],
-                    charlotteMSA_fishnet, 
-                    extensive=TRUE) %>%
-  st_centroid() %>%
-  st_join(charlotteMSA_fishnet, ., join = st_intersects) %>%
-  mutate(pop_2019 = replace_na(pop_2019,0)) %>%
-  dplyr::select(pop_2019)
+pop_interp <- st_interpolate_aw(charlottePop19["pop_2019"], 
+                                 charlotteMSA_fishnet, 
+                                 extensive = TRUE)
+
+pop_vec <- rep(NA_real_, nrow(charlotteMSA_fishnet))
+pop_vec[match(st_geometry(pop_interp), st_geometry(charlotteMSA_fishnet))] <- pop_interp$pop_2019
+
+fishnetPopulation19 <- charlotteMSA_fishnet %>%
+  mutate(pop_2019 = replace_na(pop_vec, 0))
 ```
 
 How do these data look when we map them out and compare them to the census vectors? We can see that the modifiable aerial unit issue - where smaller tracts are higher density because of the logic of tract-drawing - no longer distorts the picture - we see increased density in the center, where we expect it.
