@@ -1151,7 +1151,10 @@ Overall land forecasted land conversion can be converted from cells to raw area 
 ```{r}
 dat_2027_preds %>%
   as.data.frame() %>%
-  summarize(total_cells = sum(as.numeric(Prediction))) %>%
+  filter(Prediction == 1) %>%
+  tally() %>%
+  rename(total_cells = n) %>%
+  #summarize(total_cells = sum(as.numeric(Prediction),na.rm=TRUE)) %>%
   mutate(total_area_m = total_cells * res(lc_2019_rs)[1],
          total_km2 = total_area_m/1000000,
          total_mi2 = total_km2*0.386102) %>%
