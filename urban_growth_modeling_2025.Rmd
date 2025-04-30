@@ -1,7 +1,7 @@
 ---
-title: "CPLN 6750 - Urban Growth Modeling, 2025"
-author: "Michael Fichman, Ken Steif & Jenna Epstein"
-date: "3/26/2025"
+title: "CPLN 6750 - Urban Growth Modeling Assignment, Spring 2025"
+author: "Abe Doroshow & Austin Studner-Sutherland"
+date: "5/10/2025"
 output:
   html_document:
     toc: true
