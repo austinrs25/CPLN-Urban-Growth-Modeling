@@ -1,6 +1,6 @@
 ---
 title: "CPLN 6750 - Urban Growth Modeling Assignment, Spring 2025"
-author: "Abe Doroshow & charlotte Studner-Sutherland"
+author: "Abe Doroshow & Austin Studner-Sutherland"
 date: "5/10/2025"
 output:
   html_document:
