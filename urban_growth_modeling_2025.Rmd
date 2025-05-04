@@ -610,10 +610,13 @@ ggplot() +
 
 
 
-* ALERT 1
+# ALERT 1
+
 -----------------------
+
 TO DO: Include the hypothetical transport features for t3 forecast
 COMMENT: I think we’ll need to revise this step below (both the code and narrative) to reflect the inclusion of the new highway in the t3 forecast - I could be wrong that it is not this step though. Refer to Section 7.2 in Michael’s RMD for guidance. The best approach is likely to duplicate the current code to represent the "before" scenario, and then modify the copied version to reflect the "after" scenario with the updated highway input. This way, we preserve both versions for comparison.
+
 -----------------------
 
 
@@ -656,7 +659,7 @@ ggplot() +
   theme_void()
 ```
 
-* ALERT 1 END
+# ALERT 1 END
 
 
 
@@ -882,9 +885,11 @@ Model6 <- glm(development_change ~ wetlands + forest  + farm +
 
 
 
-* ALERT 2
+# ALERT 2
 -----------------------
+
 TO DO: Austin and Abe, review selection of Model 6 and confirm that it’s the best choice for our forecast. This decision impacts rest of Section 5 below. Before determining, take a look at Section 12.2 in Michael’s RMD (note: I’ve split that section (12.2) into 5.2 and 5.3 in our version for clarity).
+
 -----------------------
 
 
@@ -1035,16 +1040,18 @@ ggplot() +
 These diagnostics reveal the practical implications of our model and support its use for guiding policy decisions in transportation planning and growth management.
 
 
-* ALERT 2 END
+# ALERT 2 END
 
 
 
 
 
 
-* ALERT 3
+# ALERT 3
 -----------------------
+
 TO DO: Abe - Revise Steps 6 on
+
 -----------------------
 
 
@@ -1134,83 +1141,65 @@ dat_2027_preds %>%
 
 ```
 
-* ALERT 4
+# ALERT 4
+
 -----------------------
-ANSWER DELIVERABLE: Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
+
+DELIVERABLE: "Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?"
 DRAFT: This impact assessment provides the quantitative foundation needed to interpret the spatial and environmental implications of proposed highway and forecasted development...
+
 -----------------------
-* ALERT 4 END
+
+# ALERT 4 END
 
 
 
+# ALERT 5
+
+-----------------------
+
+# 8. Key Recommendations
+DELIVERABLE: "Key recommendations - use your planning expertise acquired through readings and lectures - give three key recommendations about growth allocation and management implications given the results of your forecast. This requires you to do some desk research about population and employment forecasts for your region (these are published by local MPOs) or about important local growth management issues."
+NOTE: Reference Step 15 in Michael's RMD file.
+
+-----------------------
+
+# ALERT 5 END
 
 
+# ALERT 3 END
 
 
-
-
-# 8. Next Steps: Toward an Allocation Strategy
-
-Now that we have a spatially explicit forecast of likely development across the Charlotte MSA, the next phase is to develop a planning strategy to manage that growth. This involves aligning policy tools with predicted development pressure to guide growth toward desirable outcomes.
-
-Here are a few ways you can build on this analysis:
-
-- **Integrate with Population and Employment Projections**: Compare the total forecasted developed area with regional growth forecasts published by the local MPO or state agencies. Are the predicted areas adequate to accommodate projected demand?
-
-- **Target Growth with Zoning Tools**: Use zoning overlays, such as upzoning in areas with high predicted development and existing infrastructure, to concentrate growth. TOD overlays around proposed transportation corridors could further amplify model-consistent growth.
-
-- **Protect Sensitive Land**: Overlay the forecast map with conservation data layers (e.g., wetlands, floodplains, or habitat zones). Consider strategies such as conservation easements or transfer of development rights (TDR) to minimize encroachment.
-
-- **Compare Alternate Scenarios**: Model additional infrastructure projects or policy interventions and re-run forecasts. Compare the outcomes to assess trade-offs in sprawl, equity, or environmental impact.
-
-- **Quantify Fragmentation Risk**: Evaluate whether development patterns lead to fragmentation of open space or habitat corridors. Metrics such as patch size or proximity to intact landscapes can inform this analysis.
-
-By pursuing these steps, planners can translate the raw forecast into a strategic plan that manages future development in a way that aligns with Charlotte’s sustainability, equity, and growth management goals.
-
-
-
-
-
-
-
-
-
-
-
-
-# 15. Next Steps - Towards an Allocation Strategy
-
-What do you do after you have a geographically specific forecast of likely development? You can integrate it with population projection information to see if forecasted growth areas seem adequate to accommodate future growth. You can dive in on areas where sensitive lands are at risk and determine if upzoning in other areas of nearby development might accommodate that population. You can compare future scenarios for fragmentation effects. There are myriad possibilities.
-
-
-
-
-
-
-#TO DO
-
-## Confirm Using **Model 6** for Model Deployment and Interpretation
-### Model results (summary), threshold selection, and validation (confusion matrix and exploration of errors)
-
-## 2028 Forecast Results
-### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
-
-## Recommendations for Charlotte MSA
-### Key recommendations - use your planning expertise acquired through readings and lectures - give three key recommendations about growth allocation and management implications given the results of your forecast. This requires you to do some desk research about population and employment forecasts for your region (these are published by local MPOs) or about important local growth management issues.
-
-## Conclusion
-### A SUMMARY OF PROJECT???
-
-
-* ALERT 5 END
-
-
-# 16. Data Sources
+# 9. Data Sources
 - **Land Cover Data**: Multi-Resolution Land Characteristics (MRLC) Consortium – [https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover](https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover)
 - **Census Data**: United States Census Bureau – [https://api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html)
 - **Roads Data**: Data.gov, accessed using the `Tigris` R package – [https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads](https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads)
 - **County Boundaries**: North Carolina Department of Transportation – [https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/about](https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/about)
 
 
-# 17. Credits
-This report is completed as an assignment for the University of Pennsylvania's Spring 2025 course, **CPLN 6750/MUSA 6750: Land Use and Environmental Modeling**, taught by **Michael Fichman** in the Department of City and Regional Planning at the Stuart Weitzman School of Design. This analysis was completed by **Abe Doroshow and Austin Studner (Sutherland)**. The workflow in this Urban Growth Model was created for the course by Michael Fichman, the late Prof. Ken Steif, and Jenna Epstein, and adapted and inspired from the California Urban Futures Model, developed by Prof. Emeritus John Landis. 
+# 10. Credits
+This report is completed as an assignment for the University of Pennsylvania's Spring 2025 course, **CPLN 6750/MUSA 6750: Land Use and Environmental Modeling**, taught by **Michael Fichman** in the Department of City and Regional Planning at the Stuart Weitzman School of Design. This analysis was completed by **Abe Doroshow and Austin Studner (Sutherland)**. The workflow in this Urban Growth Model was created for the course by Michael Fichman, the late Prof. Ken Steif, and Jenna Epstein, and adapted and inspired from the California Urban Futures Model, developed by Prof. Emeritus John Landis. Support was provided Michael Fichman and ChatGPT.
+
+
+
+# TO DO
+**(INCLUDES ALERTS)**
+
+1. ALERT 1: **Create the hypothetical transport features** for t3 forecast and **include where applicable** (Steps 3.4 AND ???)
+
+2. ALERT 2: In Step 5, **confirm Model 6 is best fit**
+
+3. ALERT 3: **Revise Steps 6 and on** 
+
+4. ALERT 4: In Step 7, **write narrative imapcts assessment** based on 2028 forecast results### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
+
+5. ALERT 5: **Draft Recommendations for Charlotte:** ---- **DELIVERABLE:** Key recommendations - use your planning expertise acquired through readings and lectures - give three key recommendations about growth allocation and management implications given the results of your forecast. This requires you to do some desk research about population and employment forecasts for your region (these are published by local MPOs) or about important local growth management issues. **NOTE:** Reference Step 15 in Michael's RMD file.
+
+6. **Discuss on Wedensday**
+-   Do we need Conclusion section?
+-   Confirm we have met **Deliverables**
+-   Check we have fulfilled **Rubric**
+-   Both separately run code from start to finish
+-   Both separately read final RMD file
+-   **Export final RMD file** to HTML and **Upload to Canvas**
+
