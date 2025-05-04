@@ -1230,8 +1230,26 @@ What do you do after you have a geographically specific forecast of likely devel
 
 
 
-# 16. Data Sources
 
+#TO DO
+
+## Model Deployment and Interpretation
+### Model results (summary), threshold selection, and validation (confusion matrix and exploration of errors)
+
+## 2031 Forecast Results
+### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
+
+## Recommendations for Charlotte MSA
+### Key recommendations - use your planning expertise acquired through readings and lectures - give three key recommendations about growth allocation and management implications given the results of your forecast. This requires you to do some desk research about population and employment forecasts for your region (these are published by local MPOs) or about important local growth management issues.
+
+## Conclusion
+### A SUMMARY OF PROJECT???
+
+
+
+
+
+# 16. Data Sources
 - **Land Cover Data**: Multi-Resolution Land Characteristics (MRLC) Consortium – [https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover](https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover)
 - **Census Data**: United States Census Bureau – [https://api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html)
 - **Roads Data**: Data.gov, accessed using the `Tigris` R package – [https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads](https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads)
