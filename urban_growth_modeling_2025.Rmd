@@ -658,20 +658,15 @@ ggplot() +
 
 
 
-# 8. Calculate spatial lag of development
+**Calculate Spatial Lag of Development:**
 
-As we read in Prof. Steif's introductory essay, the core of our modelling approach is the harnassing of spatial endogenaeity - we hypothesize that the likelihood of a cell to develop is (in part) a function of its proximity to existing development. How do we "parameterize" the adjacency or access of each cell relative to existing development? We use "spatial lag" variables like k-nearest-neighbors (knn).
+Assuming that proximity to existing development influences the likelihood of future development, as proposed by Prof. Ken Steif, we compute a spatial lag variable to quantify this relationship. Specifically, we calculate the average distance from each fishnet centroid to its two nearest developed neighbors as of 2011 and 2019.
 
-In this example, we calculate the average distance to each grid cell's 2 nearest developed grid cells in year `t1`. We do this using a custom function that we loaded earlier called `nn_function` to create new variables in our `fishnet` grid for `lagDevelopment_2011` and `lagDevelopment_2019`. 
+This spatial lag captures local patterns of development clustering and spatial diffusion, serving as a proxy for market signaling and development spillovers. To perform this calculation, we use a custom k-nearest neighbors function (`nn_function`). The inputs are coordinate data for all fishnet centroids and a filtered subset of centroids corresponding to developed cells in each respective year.
 
-The `nn_function` takes three arguments - two data frames with lists of x-y coordinates, and a k.
+Setting `k = 2` reflects an assumption about the local scale of development influence. Adjusting `k` would modify the sensitivity of this variable to spatial context meaning larger `k` values could capture broader neighborhood effects.
 
-- The first parameter specifies an sf object whose coordinates we want to `measureFrom`, in this case, all `fishnet` centroids. Since the function requires a data frame with x-y coordinates, we take our fishnet, convert it to centroids (`st_centroid`), extract the coordinates to a new data frame (`st_coordinates`, `as.data.frame()`)
-
-- The second, indicates the sf point data we wish to `measureTo`, in this case, the fishnet centroids that were developed in `t1`. We `filter` our `lcRasters_2011` to include only our developed cells, and then we follow the steps we took for our fishnet data, converting to centroid, and extracting coordinates to a new data frame.
-
-- The last parameter is our k - how many neighbors to which we'd like to measure average distance. Why `k=2`? As `k` fluctuates, so does the hypothesized scale of accessibility. One can test the effect of different k parameters on model goodness of fit. A more sophisticated model would hypothesize that this scale can vary significantly from city to suburb to rural town.
-
+Calculate:
 ```{r, warning = FALSE, message = FALSE}
 fishnet$lagDevelopment_2011 <-
     nn_function(fishnet %>%
@@ -698,6 +693,9 @@ fishnet$lagDevelopment_2019 <-
                 2)
 ```
 
+The output of this step, `lagDevelopment_2011` and `lagDevelopment_2019`, is a continuous predictor incorporated into our model. A **quintile map of 2011 values illustrates spatial heterogeneity in accessibility to development, confirming the relevance of spatial structure in shaping land use change**:
+
+Visualize Calculation:
 ```{r, warning = FALSE, message = FALSE}
 ggplot() +
   geom_sf(data=charlotteMSA %>% st_transform(st_crs(fishnet))) +
@@ -718,11 +716,17 @@ ggplot() +
 
 
 
-# 9. Political Boundaries
 
-We are going to add information about county boundaries to our data set. This serves two important purposes. First, it might be useful to include municipality as a fixed effect in your models to add information about regulatory "culture" or desirability of different areas. Using a geographic fixed effect adds the "average effect" of a particular area on the dependent variable - commonly this is used as a variable in housing price models to incorporate place-based price signals from things like school district or neighborhood reputation. Second, we can use this information to evaluate and analyze our model outputs - seeing where development is expected to take place and evaluate our errors across space.
 
-We can get data on counties from the US Census Bureau via the `tigris` package, transform it to the CRS of our study area, and then `filter` our county data to contain only the relevant shapes for our study area.
+**Import Political Boundaries:**
+
+Incorporating political boundaries, specifically, county-level delineations, into our urban growth model enhances both its interpretability and analytical depth. First, county membership can serve as a fixed effect, capturing regulatory, socio-economic, or cultural factors that may influence development patterns but are not directly observed in other variables. For example, zoning stringency or land use incentives might differ between Mecklenburg and Union counties.
+
+Second, appending county data to the fishnet grid enables spatial disaggregation of model outputs and errors. This supports localized policy recommendations and assessment of the forecast’s implications at the county scale.
+
+To do this, we download county administrative boundaries from the U.S. Census Bureau using the `tigris` package, transform it to the correct CRS, and filter for the four counties comprising the Charlotte MSA: Mecklenburg, Cabarrus, Gaston, and Union. These polygons are spatially joined to the fishnet, assigning each cell a `county` identifier that we include as a fixed effect in our modeling process.
+
+This integration provides a spatial administrative lens through which to interpret both development probabilities and potential policy responses.
 
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
 options(tigris_class = "sf")
@@ -735,8 +739,6 @@ studyAreaCounties <- counties %>%
   filter(NAME %in% c("Mecklenburg", "Cabarrus", "Gaston", "Union"))
 
 ```
-
-We can spatially join the `studyAreaCounties` object to our fishnet and create a `countyFishnet` where each cell is imparted with the name of the county it belongs to.
 
 ```{r}
 countyFishnet <- charlotteMSA_fishnet %>%
