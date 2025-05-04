@@ -1201,5 +1201,6 @@ This report is completed as an assignment for the University of Pennsylvania's S
 -   Check we have fulfilled **Rubric**
 -   Both separately run code from start to finish
 -   Both separately read final RMD file
+-   Rename and retitle file so its not the same as Michael's
 -   **Export final RMD file** to HTML and **Upload to Canvas**
 
