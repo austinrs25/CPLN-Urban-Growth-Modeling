@@ -29,59 +29,59 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 # 1. Introduction and Planning Rationale
 
-Charlotte, North Carolina, is one of the fastest-growing metro areas in the southeastern United States. It's population grew by 35.2% from 2000 to 2010 and 19.6% from 2010 to 2020, and its forecasted to grow an additional 14.1% from 2020 to 2030. This project aims to forecast urban development in the Charlotte Metropolitan Area, specifically Mecklenburg, Cabarrus, Gaston, and Union counties, by the year 2031. The forecast is based on land cover change from 2011 to 2021 and uses a logistic regression model to project future development patterns. This scenario includes a proposed --- new highway running from southeastern Mecklenburg into downtown Charlotte, designed to increase connectivity and redirect growth pressure. ---
+Charlotte, North Carolina, is one of the fastest-growing metro areas in the southeastern United States. It's population grew by 35.2% from 2000 to 2010 and 19.6% from 2010 to 2020, and its forecasted to grow an additional 14.1% from 2020 to 2030. This project aims to forecast urban development in the Charlotte Metropolitan Area, specifically Mecklenburg, Cabarrus, Gaston, and Union counties, by the year 2031. The forecast is based on land cover change from 2011 to 2021 and uses a logistic regression model to project future development patterns. **This scenario includes a proposed --- new highway running from southeastern Mecklenburg into downtown Charlotte, designed to increase connectivity and redirect growth pressure. --- **
 
 Our objective is to support proactive growth management by identifying areas at risk for sprawl, encroachment on environmentally sensitive lands, and potential conflicts with existing infrastructure or planning goals. The Charlotte region presents a valuable case study due to its ongoing growth.
 
-# 1.2. Data Sources
+## 1.2. Data Sources
 
-We obtained land cover data from the Multi-Resolution Land Characteristics (MRLC) consortium (https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover), covering 2011 and 2019. Census data was sourced from the United States Census Bureau (https://api.census.gov/data/key_signup.html). Roads data was sourced from data.gov and downloaded using the *Tigris* package (https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads). County Boundary data was sourced from North Carolina Department of Transportation (https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/explore). 
+We obtained land cover data from the Multi-Resolution Land Characteristics (MRLC) consortium (https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover), covering 2011 and 2019. Census data was sourced from the United States Census Bureau (https://api.census.gov/data/key_signup.html). Roads data was sourced from data.gov and downloaded using the `Tigris` package (https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads). County Boundary data was sourced from North Carolina Department of Transportation (https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/about). 
 
 # 2. Exploratory Analysis and Feature Engineering
 
-*Explain workflow here*
+**Provide narrative overview of *Exploratory Analysis and Feature Engineering* here**
 
-# 2.1. Setup - Load Libraries, Functions, and Color Pallette
+## 2.1. Setup - Load Libraries, Functions, and Color Pallette
 
 The packages used for our model and analysys are below. A color palette used to visualize the analyis is also provided below. 
 
 **The packages are as follows:**
 
-- *tidyverse* - main data wrangling and visualization packages including dplyr and ggplot2
+- `tidyverse` - main data wrangling and visualization packages including `dplyr` and `ggplot2`
 
-- *sf* - core R-based vector GIS package
+- `sf` - core R-based vector GIS package
 
-- *raster* - raster GIS package - this package doesn't always use the "tidy" syntax we are used to. `terra` is the main competitor for raster work in R - if you don't like `raster`, try it out.
+- `raster` - raster GIS package - this package doesn't always use the "tidy" syntax we are used to. `terra` is the main competitor for raster work in R - if you don't like `raster`, try it out.
 
-- *kableExtra* - package that makes nice readable tables in R Markdown
+- `kableExtra` - package that makes nice readable tables in R Markdown
 
-- *tidycensus* - package for calling census data from the US Census API
+- `tidycensus` - package for calling census data from the US Census API
 
-- *tigris* - library for calling US Census Bureau vector GIS data
+- `tigris` - library for calling US Census Bureau vector GIS data
 
-- *FNN* - spatial point-pattern analysis package that we use for K-nearest neighbor
+- `FNN` - spatial point-pattern analysis package that we use for K-nearest neighbor
 
-- *caret* - package used for applied predictive modeling
+- `caret` - package used for applied predictive modeling
 
-- *yardstick* - package for summarizing model performance
+- `yardstick` - package for summarizing model performance
 
-- *plotROC* - tool to plot ROC curves, a diagnostic for logistic regression
+- `plotROC` - tool to plot ROC curves, a diagnostic for logistic regression
 
-- *ggrepel* - graphics package to handle labels in ggplot2
+- `ggrepel` - graphics package to handle labels in `ggplot2`
 
-- *pROC* - package to analyze ROC curves
+- `pROC` - package to analyze ROC curves
 
-- *grid* - graphics package to display multiple plots in one visualization
+- `grid` - graphics package to display multiple plots in one visualization
 
-- *gridExtra* - package used to make small multiple arrangements of ggplots
+- `gridExtra` - package used to make small multiple arrangements of ggplots
 
-- *viridis* - library with nice color ramps for our charts and maps.
+- `viridis` - library with nice color ramps for our charts and maps.
 
-- *igraph* - package for network analysis
+- `igraph` - package for network analysis
 
-- *mapview* - quick web mapping package that can handle sf and raster data
+- `mapview` - quick web mapping package that can handle sf and raster data
 
-- *FedData* - package for accessing federal satellite imagery via API
+- `FedData` - package for accessing federal satellite imagery via API
 
 ```{r load_packages, message=FALSE, warning=FALSE, results = "hide"}
 library(tidyverse)
@@ -120,7 +120,7 @@ palette10 <- c("#f7fcf0","#e0f3db","#ccebc5","#a8ddb5","#7bccc4",
 
 - `nn_function` measures the distance from one `sf` point object to its k-nearest-neighbors from another `sf` point object
 
-- `aggregateRaster`loops through a list of rasters, converts the each raster to points, filters only points that have value of `1` (ie. is the _ith_ land cover type), and then aggregates to the fishnet.
+- `aggregateRaster` loops through a list of rasters, converts the each raster to points, filters only points that have value of `1` (ie. is the _ith_ land cover type), and then aggregates to the fishnet.
 
 The following code block loads these functions:
 
@@ -193,11 +193,11 @@ aggregateRaster <- function(inputRasterList, theFishnet) {
   }
 ```
 
-# 2. Loading LC and MSA data
+## 2.2. Load the study area MSA
 
-## 2.1. Load the study area MSA
+Our study area is the Charlotte MSA. A shapefile for the study area was engineered in ArcGIS Pro and exported to a GeoJSON and stored in Github for this analysis. 
 
-*Explain loading study area and coordinate system*
+Below we load our data into the R and we `st_transform` it to the **2264 coordinate reference system**, which is appropriate for Charlotte MSA and has a linear unit in feet.
 
 ```{r}
 charlotteMSA <- 
@@ -205,9 +205,9 @@ charlotteMSA <-
 charlotteMSA %>% st_transform(2264)
 
 ```
-## 2.2. Load Land Cover for t1 and t2
+## 2.3. Load Land Cover for t1 and t2
 
-*Explain loading landcover*
+Below we call our raster land cover data for our two time periods we are interested in - **2011 (t1)** and **2019 (t2)**. 
 
 ```{r}
 
