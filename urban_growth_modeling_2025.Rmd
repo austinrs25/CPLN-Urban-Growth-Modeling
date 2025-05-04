@@ -262,9 +262,15 @@ mapView(development_change)
 
 ```
 
-# 4. Creating the Fishnet
 
-*Explain fishnet creation*
+
+
+
+## 3.4. Engineering the Fishnet
+
+**Create Fishnet:**
+
+To facilitate modeling and analysis at a consistent spatial scale, we convert raster data to a regular vector grid, commonly referred to as a fishnet. Each cell in this fishnet becomes a unit of observation, with associated attributes describing land cover and other predictors.
 
 ```{r, warning = FALSE, message = FALSE}
 charlotteMSA_fishnet <- 
@@ -279,13 +285,9 @@ charlotteMSA_fishnet <-
   mutate(uniqueID = rownames(.))
 ```
 
-# 5. Join Raster Data to the Fishnet
+**Aggregating Land Cover Change to the Fishnet:**
 
-*Explain joining raster data to fishnet*
-
-## 5.1. Aggregating LC Change to fishnet
-
-*Explain aggregating landcover change to fishnet*
+First, we convert our binary land cover change raster (indicating development from 2011 to 2019) into points. These are then spatially aggregated to our Charlotte MSA fishnet grid. Each grid cell is assigned a value of 1 if development occurred within its bounds, and 0 otherwise. This step transforms spatially continuous raster data into a tabular form suitable for logistic regression.
 
 ```{r}
 changePoints <-
@@ -304,8 +306,7 @@ fishnet <-
 
 ```
 
-
-*plot land cover change*
+A quick map shows development change across the region. By plotting fishnet cell centroids and coloring them by their change status, we visually confirm where growth has occurred over the decade.
 
 ```{r}
 ggplot() +
@@ -321,6 +322,25 @@ ggplot() +
   labs(title = "Land Cover Development Change", subtitle = "As fishnet centroids") +
   theme_void()
 ```
+
+
+
+
+
+**Aggregating Batch Land Cover Data to the Fishnet:**
+
+To enhance model accuracy, we reclassify the full land cover dataset into broader land use categories: developed, forest, farm, wetlands, other undeveloped, and water. This simplification improves interpretability and reduces data sparsity.
+
+For both t1 (2011) and t2 (2018), we construct binary raster layers representing the presence of each land use type. These rasters are named accordingly and compiled into lists.
+
+Using a batch aggregation function (`aggregateRaster`), we spatially join these raster layers to the fishnet. The result is a dataset where each cell is tagged with binary indicators for each land cover category. This process ensures our model includes rich information about the land characteristics of each grid cell at both time points.
+
+Visualization of the aggregated layers confirms successful mapping. Faceted maps by land cover type show the spatial distribution of different land uses in 2011, helping validate classification and detect emerging development patterns.
+
+
+
+
+
 
 
 ## 5.2. Aggregating Batch Land Cover Data to the Fishnet
@@ -447,6 +467,16 @@ lcRasters_2011 %>%
          subtitle = "As fishnet centroids") +
    theme_void()
 ```
+
+
+
+
+
+
+
+
+
+
 
 # 6. Wrangle Census Data and Join To the Fishnet
 
