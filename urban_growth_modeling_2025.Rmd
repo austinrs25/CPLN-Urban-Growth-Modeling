@@ -33,18 +33,55 @@ Charlotte, North Carolina, is one of the fastest-growing metro areas in the sout
 
 Our objective is to support proactive growth management by identifying areas at risk for sprawl, encroachment on environmentally sensitive lands, and potential conflicts with existing infrastructure or planning goals. The Charlotte region presents a valuable case study due to its ongoing growth.
 
-# 1.2. Data Acquisition and Preparation
+# 1.2. Data Sources
 
-We obtained land cover data from the Multi-Resolution Land Characteristics (MRLC) consortium (https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover), covering 2011 and 2019. Census and infrastructure datasets were sourced from federal and local open data repositories. All datasets were clipped to the study region and rasterized to a uniform resolution to enable pixel-level predictive modeling.
+We obtained land cover data from the Multi-Resolution Land Characteristics (MRLC) consortium (https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover), covering 2011 and 2019. Census data was sourced from the United States Census Bureau (https://api.census.gov/data/key_signup.html). Roads data was sourced from data.gov and downloaded using the *Tigris* package (https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads). County Boundary data was sourced from North Carolina Department of Transportation (https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/explore). 
 
-
-# 1.3. The Workflow
+# 2. Exploratory Analysis and Feature Engineering
 
 *Explain workflow here*
 
-# 1.4. Setup - Loading Libraries and Functions
+# 2.1. Setup - Load Libraries, Functions, and Color Pallette
 
-*Explain loading libraries*
+The packages used for our model and analysys are below. A color palette used to visualize the analyis is also provided below. 
+
+**The packages are as follows:**
+
+- *tidyverse* - main data wrangling and visualization packages including dplyr and ggplot2
+
+- *sf* - core R-based vector GIS package
+
+- *raster* - raster GIS package - this package doesn't always use the "tidy" syntax we are used to. `terra` is the main competitor for raster work in R - if you don't like `raster`, try it out.
+
+- *kableExtra* - package that makes nice readable tables in R Markdown
+
+- *tidycensus* - package for calling census data from the US Census API
+
+- *tigris* - library for calling US Census Bureau vector GIS data
+
+- *FNN* - spatial point-pattern analysis package that we use for K-nearest neighbor
+
+- *caret* - package used for applied predictive modeling
+
+- *yardstick* - package for summarizing model performance
+
+- *plotROC* - tool to plot ROC curves, a diagnostic for logistic regression
+
+- *ggrepel* - graphics package to handle labels in ggplot2
+
+- *pROC* - package to analyze ROC curves
+
+- *grid* - graphics package to display multiple plots in one visualization
+
+- *gridExtra* - package used to make small multiple arrangements of ggplots
+
+- *viridis* - library with nice color ramps for our charts and maps.
+
+- *igraph* - package for network analysis
+
+- *mapview* - quick web mapping package that can handle sf and raster data
+
+- *FedData* - package for accessing federal satellite imagery via API
 
 ```{r load_packages, message=FALSE, warning=FALSE, results = "hide"}
 library(tidyverse)
@@ -73,7 +110,19 @@ palette10 <- c("#f7fcf0","#e0f3db","#ccebc5","#a8ddb5","#7bccc4",
                "#4eb3d3","#2b8cbe","#0868ac","#084081","#f7fcf0")
 ```
 
-*Explain loading functions and creating empty fishnet*
+**Several custom built functions are use in this workflow:** 
+
+- `quintileBreaks` takes a dataframe and a column name and outputs the quintile breaks, helping shorten the below `ggplot` calls.
+
+- `xyC` quickly plots sf polygons by converting a fishnet into a dataframe of grid cell centroid coordinates that can be plotted using `geom_point`.
+
+- `rast` quickly converts raster objects in R into data frames for quick plotting in `ggplot`
+
+- `nn_function` measures the distance from one `sf` point object to its k-nearest-neighbors from another `sf` point object
+
+- `aggregateRaster`loops through a list of rasters, converts the each raster to points, filters only points that have value of `1` (ie. is the _ith_ land cover type), and then aggregates to the fishnet.
+
+The following code block loads these functions:
 
 ```{r, warning = FALSE, message = FALSE}
 #this function converts a column in to quintiles. It is used for mapping.
