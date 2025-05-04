@@ -573,28 +573,17 @@ ggplot() +
 
 
 
+**Import Transportation and Infrastructure:**
 
+Accessibility plays a critical role in shaping urban development. In this section, we evaluate proximity to highway infrastructure across the Charlotte MSA, based on the hypothesis that areas nearer to highways are more likely to urbanize. This is grounded in the traditional **bid-rent theory** of land use, proximity to Central Business Districts (CBDs), linking accessibility with land value and density of development.
 
+To operationalize this, we calculate the Euclidean distance from each fishnet centroid to the nearest highway segment. This continuous variable serves as a proxy for transportation accessibility and is included as a predictor in our logistic regression model.
 
+**Highway Data Acquisition and Visualization:**
 
+Using the `Tigris` package, we download primary and secondary road geometries for North Carolina, clip them to the Charlotte MSA, and project them into our analysis CRS.
 
-
-
-
-
-
-# 7. Transportation And Infrastructure
-
-Accessibility is a key determinant of development potential. The hypothesis here is that the closer a cell is to highway infrastructure, the more likely it is to develop. Accessibility features are engineered by measuring distance from each grid cell to its nearest highway. 
-
-This example only uses highway distance, but one could easily add spatial information about transit lines, bus networks or other relevant infrastructure as predictors. In urban growth modeling, one might model scenarios where new infrastructure is developed, such as a new highway or a new transit line.
-
-To manipulate this workflow and include new infrastructure, you can use ArcGIS or other software to draw a new highway, and then bring that shape into a modeling workflow in this section and calculate new (hypothetical) distance-to-highway variables for each cell in `t2` to use as a basis for forecasting an alternate future `t3` where some cells now have a different level of access to transportation.
-
-## 7.1. Download Highways
-
-First highway vectors (`primary_roads`) are downloaded from the `Tigris` package - we project the data and subset it to the study area using `st_intersection`.
-
+Import Highways Data and Project to CRS:
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
 charlotteHighways <-
   tigris::primary_secondary_roads(state = "NC") %>%
@@ -603,8 +592,7 @@ charlotteHighways <-
   st_transform(st_crs(fishnet))
 ```
 
-Let's make a map and examine the spatial relationship between highways and development.
-
+A **preliminary map** overlays these highways on top of development change data, providing visual evidence of possible spatial correlation between highway access and urban expansion:
 ```{r plot_highway, warning = FALSE, message= FALSE}
 ggplot() +
   geom_point(data=fishnet, 
@@ -617,17 +605,18 @@ ggplot() +
   theme_void()
 ```
 
-## 7.2. Calcuate Distance to Highways
 
-We can create a new fishnet variable called `distance_highways_2011` by turning our `charlotteMSA_fishnet` into centroid points and calculating the distance from each cell centroid to the nearest highway segment. This is done in a `mutate` command that utilizes the `st_distance` function to run this distance calculation for each observation.
 
-We join these observations back to a fishnet, and the result is a grid called `highwayPoints_fishnet` with a column called `distance_highways_2011`.
 
-An important note:
+# I BELIEVE THIS STEP (CODE AND NARRATIVE TEXT) WILL NEED TO BE ADJUSTED TO INCLUDE NEW HIGHWAY FOR T3 FORECAST  -- **REFERENCE 7.2 IN MICHAEL'S RMD** -- CREATE A BEFORE AND AFTER, SO LIKELY COPY AND PASTE AND ONLY ADJUST THE PASTED CODE SO THE CURRENT CODE CAN STAY AND REPRESENT THE BEFORE AND YOUR PASTED AND THEN EDITED CODE WILL REPRESENT THE AFTER
 
-This analysis operates on the *assumption* that the transporation network in `t2` (2019) is the same as in `t1` - so we create a fishnet representing `t2` that is the same - we merely copy it.
 
-*If you are trying to input a different set of transportation infrastructure as the basis for your future projection for t3 - you will want to import this new network info at this step and create an alternative `highwayPoints_fishnet_2019` (or whatever name represents t2 in your analysis). This information will be an important variable in your model that you use to project future development change.*
+
+**Calculate Distance to Highways:**
+
+We compute a new variable, `distance_highways_2011`, for each fishnet cell by measuring the straight-line distance to the nearest highway feature. This step uses `st_distance` and applies to centroid points derived from the fishnet. These distances are added back to the fishnet, enabling their use in modeling and spatial analysis.
+
+To maintain modeling consistency, we mirror this step for `t2`, creating `distance_highways_2019`. **If simulating the effect of proposed infrastructure, such as a future highway or transit line, a modified distance layer would be introduced here to inform the `t3` forecast.**
 
 ```{r, warning = FALSE, message = FALSE}
 highwayPoints_fishnet_2011 <- charlotteMSA_fishnet %>%
@@ -643,6 +632,8 @@ highwayPoints_fishnet_2019 <- highwayPoints_fishnet_2011 %>%
   rename(distance_highways_2019 = distance_highways_2011)
 
 ```
+
+This **map displays distance-to-highway** values using quintile symbology, visually reinforcing the accessibility gradient across the study area and confirming the spatial precision of this feature.
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -661,7 +652,7 @@ ggplot() +
 ```
 
 
-
+# REMOVE THIS LINE AND MY COMMENT LINE WHEN COMPLETE
 
 
 
