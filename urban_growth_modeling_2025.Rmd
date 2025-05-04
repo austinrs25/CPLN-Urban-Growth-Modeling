@@ -162,7 +162,7 @@ aggregateRaster <- function(inputRasterList, theFishnet) {
 
 A shapefile for the study area was engineered in ArcGIS Pro and exported to a GeoJSON and stored in Github for this analysis. 
 
-**Load Administrative Boundaries and Set Coordinate System:**
+**Load Administrative Boundaries and Set Coordinate Reference System (CRS):**
 
 ```{r}
 charlotteMSA <- 
@@ -437,38 +437,22 @@ lcRasters_2011 %>%
 
 
 
-# 6. Wrangle Census Data and Join To the Fishnet
+**Import Census Data and Joining to the Fishnet:**
 
-Population density is obviously a critical demand-side component of predicting `Development_Demand`. Census data for both 2011 and 2019 can be downloaded quickly using the `tidycensus` package. As illustrated below, these data are downloaded at a census tract geography and thus, an approach is needed to reconcile tracts and fishnet geometries. This is accomplished using a technique called areal weighted interpolation.
+Population density serves as a critical demand-side factor in forecasting urban growth. In this analysis, we retrieved total population data for 2011 (t1) and 2019 (t2) using the `tidycensus` package. Since the census data are aggregated at the tract level, we implemented a technique known as areal weighted interpolation (AWI) to align this data with our fishnet grid.
 
-Keep in mind, when you are choosing your time period of interest for your study, that the ACS came into being in the mid 2000s - so models based on data further back might need to use decennial census data sets and different `tidycensus` API calls.
+AWI apportions tract-level population values to fishnet cells based on the proportion of spatial overlap, providing a refined spatial approximation of population distribution. This step ensures each fishnet cell has a representative population estimate for both t1 and t2, enabling our model to capture population-driven development patterns.
 
-One useful variable that we do not explore in this exercise is population change - it stands to reason that an undeveloped grid cell in or proximate to an area with accelerating growth (e.g. a density higher than that of 5 or 10 years previous) would be likely to convert.
+**Downloading and Tidying Census Data:**
 
-Recall, you will need a census API key to download the census data which must be input with `census_api_key`. 
+We use the Census API to extract population data for the counties in the Charlotte MSA: Mecklenburg, Cabarrus, Gaston, and Union. Each dataset is transformed into the same CRS as the fishnet and lightly buffered to avoid geometry issues during spatial processing.
 
-## 6.1. Downloading Census Data via API
-
-Load your census API key by pasting it into the code block below with the function `census_api_key`
-
+Load Census Data:
 ```{r load_key, warning = FALSE, eval = FALSE}
 census_api_key("e79f3706b6d61249968c6ce88794f6f556e5bf3d", overwrite = TRUE)
 ```
 
-First data we pull population data for `t1` and reproject it to the same crs as our study fishnet - `charlotteMSA_fishnet`.
-
-In your growth model - you can pull more demographic and economic variables here by adding them to the `acs_vars` list of data that you'd like to call from the Census.
-
-Note that you need to specify your study area in the API call - here I specify the state as `48` (The two-letter abbreviation `TX` would also work), and I specify the county with a list of the counties in my study area.
-
-This is a nice dplyr chain that does the following:
-
-- DL the data, 
-- `select` only the Estimates, NAME, and GEOID column (e.g. removing the margin of error columns)
-- `rename` my variables to be intelligible, 
-- `st_transform` the data to the `charlotteMSA_fishnet` crs
-- `st_buffer` the geometries a teeny tiny bit (by negative 1 map unit) - this is done because sometimes (only sometimes) you have twisted and broken geometries, and this fixes it. If you don't do this, when we do aerially weighted interpolation, you might get an error.
-
+Pull population data for `t1` (2011) and reproject to CRS:
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
 # Specify which variable(s) you would like to grab. Here, only one (Total Population) is listed, but you could add more to the call.
 acs_vars <- c("B02001_001E")
@@ -487,9 +471,7 @@ charlottePop11 <- get_acs(geography = "tract",
                 st_buffer(-1)
 ```
 
-We do this once more for `t2`, in this case, 2019.
-
-
+Pull population data for `t2` (2019) and reproject to CRS:
 ```{r, warning = FALSE, message = FALSE, results = "hide"}
 # Specify which variable(s) you would like to grab. Here, only one (Total Population) is listed, but you could add more to the call.
 acs_vars <- c("B02001_001E")
@@ -508,9 +490,7 @@ charlottePop19 <- get_acs(geography = "tract",
                 st_buffer(-1)
 ```
 
-Then we can plot our data and see the spatial arrangement of population in our study area in t1 and t2.
-
-One thing worth noting here is that the quantile symbology that we apply probably changes from t1 to t2 - so you can see that, on average, there was densification across the metro area on this time interval - the quantile ranges shift upwards.
+Create choropleth maps to show total population distributed by quintiles, comparing population density in both years (2011 and 2019). This upward shift in population desnsity reflects the Charlotte MSA’s ongoing urbanization, particularly within Mecklenburg County and along key suburban corridors.
 
 <div class="superbigimage">
 ```{r, warning = FALSE, message = FALSE, fig.height= 8, fig.width= 11}
@@ -532,30 +512,11 @@ ggplot() +
   theme_void(), ncol=2)
 ```
 
-## 6.2. Aggregate Census Data with Aerially Weighted Interpolation
+**Perform Areal Weighted Interpolation (AWI):**
 
-AWI is a cool spatial analysis tool, you may not have used it before - we can use it to reconcile tract boundaries and fishnet grid cells, and apportion population from the tracts to the cells. Here is how Prof. Steif described AWI -
+We perform AWI for both 2011 (t1) and 2019 (t2), creating population estimates for each grid cell. These interpolated values are joined back to the fishnet, resulting in spatially consistent population features named `pop_2011` and `pop_2019`.
 
-*Areal weighted interpolation is a really strong spatial analysis skill to have. You can do this in ArcGIS but there is not automated approach.*
-
-*A spatial join would be inappropriate as it would assign the same population value from one tract to the many intersecting grid cells. Instead, the area weighted interpolation function ... assigns a proportion of a tract’s population to a grid cell weighted by the proportion of the tract that intersects the grid cell. This works best of course, when we assume that the tract population is uniformly distributed across the tract. This is typically not a great assumption. However, it is a reasonable one here particularly given population is a feature in a regression and not an outcome that needs to be measured with significant precision. *
-
-*Ken Steif, 2019*
-
-The code chunks below perform AWI for our `t1` and `t2` census data using the `st_interpolate_aw` function. This process might take a bit of time to run. The output is a new fishnet for each year that consists of a population estimate and a geometry. It is important to note that your tracts and your fishnet might have points where they fail to overlap, and you might lose the fidelity of your analysis by dropping fishnet cells. This workflow is 
-
-Here is a breakdown of the workflow so that you can adapt it to use other data sets in your analysis.
-
-- `st_interpolate_aw` takes an sf object (`charlottePop11`), a column name from that sf object (`["pop_2011"]`) and our fishnet `charlotteMSA_fishnet`. Leave the argument `extensive=TRUE` as-is.
-
-- Knowing that our result might have a differing number of cells from the fishnet, we convert this object to centroids (`st_centroid`) and spatially join it to our fishnet using `st_join` - a join initiated from the `charlotteMSA_fishnet` object. This finds the points where our AWI results intersect the fishnet cells, and keeps any cells where there is no intersection,
-
-- Lastly, we perform some data cleaning, where we replace NA values (`replace_na`) with zeros, and `select` only our `pop_2011` column to remain.
-
-Keep an eye on how many cells your fishnets have throughout the process - if you are adding or dropping cells, something is going wrong.
-
-If you get warning messages about "constant or uniform" geometries - this is just the `sf` package reminding you to be on your p's and q's about projections - it won't protect you if your projections don't match!
-
+Perform AWI for `t1` (2011):
 ```{r, warning = FALSE, message = FALSE}
 pop_interp <- st_interpolate_aw(charlottePop11["pop_2011"], 
                                  charlotteMSA_fishnet, 
@@ -568,9 +529,7 @@ fishnetPopulation11 <- charlotteMSA_fishnet %>%
   mutate(pop_2011 = replace_na(pop_vec, 0))
 ```
 
-We repeat the process for our `t2` data.
-
-
+Perform AWI for `t2` (2019):
 ```{r}
 pop_interp <- st_interpolate_aw(charlottePop19["pop_2019"], 
                                  charlotteMSA_fishnet, 
@@ -583,8 +542,9 @@ fishnetPopulation19 <- charlotteMSA_fishnet %>%
   mutate(pop_2019 = replace_na(pop_vec, 0))
 ```
 
-How do these data look when we map them out and compare them to the census vectors? We can see that the modifiable aerial unit issue - where smaller tracts are higher density because of the logic of tract-drawing - no longer distorts the picture - we see increased density in the center, where we expect it.
+This transformation addresses the Modifiable Areal Unit Problem (MAUP) inherent in tract-level data and enhances the spatial resolution of our model inputs. When visualized, these population layers reveal spatial densification patterns across the Charlotte region, with a clear concentration of growth in urban and near-suburban areas.
 
+Map AWI Transformations:
 <div class="superbigimage">
 ```{r, warning = FALSE, message = FALSE, fig.height = 8, fig.width= 11}
 grid.arrange(
@@ -608,6 +568,13 @@ ggplot() +
   theme_void(), ncol=2)
 ```
 </div>
+
+
+
+
+
+
+
 
 # 7. Transportation And Infrastructure
 
