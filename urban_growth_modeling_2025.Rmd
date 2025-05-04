@@ -52,7 +52,7 @@ This workflow closely mirrors the original instructional steps and includes:
 12. **Planning Recommendations**: Based on outputs, strategies are proposed to align infrastructure, zoning, and conservation policies.
 
 
-# 3. Exploratory Analysis and Feature Engineering
+# 3. Feature Engineering
 
 We assume a new primairy highway is introduced in southeast Mecklenburg County to enhance commuting access and connection to the city. This infrastructure investment is expected to increase the likelihood of development in surrounding areas. Distance to this corridor is incorporated as a predictor variable in both the t2 model and the t3 forecast.
 
@@ -711,13 +711,6 @@ ggplot() +
 ```
 
 
-
-
-
-
-
-
-
 **Import Political Boundaries:**
 
 Incorporating political boundaries, specifically, county-level delineations, into our urban growth model enhances both its interpretability and analytical depth. First, county membership can serve as a fixed effect, capturing regulatory, socio-economic, or cultural factors that may influence development patterns but are not directly observed in other variables. For example, zoning stringency or land use incentives might differ between Mecklenburg and Union counties.
@@ -756,38 +749,17 @@ countyFishnet <- charlotteMSA_fishnet %>%
 ```
 
 
+# 4. Exploratory Analysis
 
+## 4.1 Transform Data Set for Modeling
 
+After extensive preprocessing, we consolidate our engineered features into two final datasets: one for model training (based on t1 data) and one for forecasting (based on t2 data). This step brings together all components—spatial lag, population, infrastructure (highways), land cover, and county identifiers, into unified spatial tabular data.
 
+Each dataset consists of a shared fishnet structure and includes identical columns, ensuring compatibility with our logistic regression model, as the model can only make predictions on new data that conform to the format it was trained on. For `dat_2011`, we retain variables from 2011 and rename them generically to allow seamless application of the model to `dat_2019`, which mirrors the nomenclature/structure but contains updated predictor values.
 
+To finalize the dataset, we `cbind` together the component data frames (each representing a set of attributes like accessibility, census, or land cover) and filter out cells classified as water. We use `rename_with` to drop the year suffixes and standardize variable names across time points.
 
-# 10. Creating Our Data Set for Modeling
-
-We've done a substantial amount of data wrangling and transformation, and now we can put all of our fishnets together into a data set that we can explore (as part of our feature engineering) and ultimately model. We will need to prepare data sets for `t1` (used to train a model that can predict `development_change` between `t1` and `t2`), and for `t2` (which uses the same variables to forecast change in `t3`).
-
-If there are additional elements that you want to add to your modeling, this is the step where you can put them together. If you are doing your data wrangling using ArcGIS, this is a point at which you'd want to bring your data in to create data sets that are similar to those we create below:
-
-Let's take stock of what we have:
-
-For t1
-
-- fishnet
-- highwayPoints_fishnet_2011
-- fishnetPopulation11
-- lcRasters_2011
-- countyFishnet
-
-For t2
-
-- fishnet
-- highwayPoints_fishnet_2011
-- fishnetPopulation11
-- lcRasters_2011
-- countyFishnet
-
-Each of these fishnets should have the same number of cells (in this analysis, that's 32816), and given that they were created in the same manner, they will be indexed identically, and can be appended to one another using `cbind`.  Using `select`, we keep only our relevant independent variables (lc type, transport distance, county name, lag to development etc.,), our dependent variable (development change), our uniqueID and our geometry.
-
-In the last two step of our data binding process below we use a function called `rename_with` to remove the string indicating the year from our column names. Why do we do this? It's because our trained model (built using `t1` data) will columns of the same name and data type for `t2` to make predictions. The training data is all it "knows" - so we must prepare similarly formatted data to deploy it.
+This modeling dataset forms the analytical core of our project, from which we explore relationships, validate forecasting/predictive accuracy, and generate the 2027 development forecast.
 
 ```{r}
 
@@ -813,23 +785,12 @@ dat_2019 <-
 
 ```
 
+## 4.2 Feature Exploration
 
+**Relationship between Variables and Outcome and Influence on Model:**
+Before final model estimation, we explore the relationship between each predictor and the development outcome to understand how they might influence the model. Since our dependent variable (`development_change`) is binary (indicating whether a cell developed between 2011 and 2019) we examine how the mean value of each continuous variable differs between changed and unchanged cells.
 
-
-
-
-
-# 11. Feature Exploration
-
-In this section we explore the extent to our possible predictors are associated with development change. If the goal was to predict a continuous variable, scatterplots and correlation coefficients make this process straightforward and relatively easy to explain to a non-technical decison maker.
-
-In this case however, the dependent variable is a binary outcome - either a grid cell was developed between `t1` and `t2` or it wasn’t. In this case, the relevant question is whether for a given feature, there is a notable significant difference in its central tendancies or distribution between areas that changed and areas that did not. These differences are explored in a set of plots below. For models with lots of features, these plots could be complimented by a series of statistical tests examining the difference between a predictor's mean for `1` and `0` cases.
-
-Here, we `select` our continuous varialbes and our dependent variable, convert our to long form using `gather` created facetted bar plots. Note that `geom_bar` calculates the `mean` has a `fun.y` argument where we can calculate the mean value for these variables inside our plotting function. 
-
-How do you interpret each of these plots? Try the following framework - "On average, a cell that converted from undeveloped to developed had was __________ compared to a cell that didn't convert."
-
-Do you think these are going to be good predictors of `development_change`? Why?
+We use bar plots to compare mean values of continuous predictors such as distance to highways, spatial lag of development, and population across the two outcome classes. These comparisons offer insight into whether features are likely to be strong predictors. For instance, we might find that developed cells tend to be closer to highways or have lower spatial lag values, reinforcing hypotheses about the role of accessibility.
 
 ```{r, warning = FALSE, message = FALSE}
 dat_2011 %>%
@@ -845,8 +806,10 @@ dat_2011 %>%
     theme_minimal() 
 ```
 
-It's also useful to look at the patterns of change between different land cover types. What proportion of each undeveloped land cover type converted to developed during the t1-t2 interval?
+**Relationship and Influence by Land Cover Type:**
+Additionally, we evaluate development conversion rates across initial land cover types. This helps identify which landscapes (e.g., forest, farm, or wetlands) are more likely to transition to urban use. The results, presented in a table of conversion rates, reveal how land cover composition influences development likelihood.
 
+These diagnostics validate our feature engineering efforts and provide a clearer picture of the forces driving change across the Charlotte MSA.
 
 ```{r, warning = FALSE, message = FALSE}
 dat_2011 %>%
@@ -862,18 +825,12 @@ dat_2011 %>%
 ```
 
 
+# 5. Modeling
+In this stage, we create models to predict where development is most likely to occur in the Charlotte MSA. Using logistic regression, we explore how well different combinations of predictors can estimate the binary outcome of land cover change (undeveloped to developed) between 2011 and 2018.
 
+## 5.1 Splitting the Data
 
-
-
-
-# 12. Modeling
-
-We are going to train and test our models using a workflow based on the one we learned in the ["Introduction to Applied Predictive Modeling" text](https://mafichman.github.io/applied_predictive_modeling/#1_Introduction), where we used Binary Logistic Regression to estimate morbidity in plants.
-
-## 12.1. Splitting our data
-
-First, `dat` is split into 50% training and test sets. Since we have relatively few 1's in our data, a generous train/test split helps keeps a fair number of 1's in the training set. Note how we specify `dat_2011$otherUndeveloped` as needing to be sorted into our training set - there are relatively few of these, and we want to make sure our model has "seen" all levels of our fixed effects in training.
+We divide our dataset into training and testing subsets using a 50/50 split to ensure a sufficient number of developed cells are included for model training. We stratify by land cover type to maintain balanced representation across categories.
 
 ```{r, warning = FALSE, message = FALSE}
 set.seed(3456)
@@ -886,23 +843,10 @@ datTest  <- dat_2011[-trainIndex,]
 
 ```
 
-## 12.2. Specifying models
+## 5.2 Model Specification
 
-We estimate six separate `glm` models - adding new variables for each.
+We construct six logistic regression models of increasing complexity. The models begin with only land cover types and sequentially add spatial lag, population density, county fixed effects, and highway accessibility. The final model introduces an interaction term between highway proximity and spatial lag to test whether the effect of one predictor depends on the other.
 
-- `Model1` includes only previous land cover types. 
-
-- `Model2` adds the `lagDevelopment`. 
-
-- `Model3` adds population
-
-- `Model4` adds a fixed effect for county (`NAME`)
-
-- `Model5` adds the distance to highway.
-
-- `Model6` is a modification of `Model5` which *interacts* distance to highway and development lag. The hypothesis here is that these two variables are related - the effect of one depends on the other. e.g. Distance to nearest development depends in part on access to transportation. Notice that the effect of both variables is significant in this specification, but both are not significant in `Model5`.
-
-Which model is best? The one that performs the most usefully in our forecasting use case! As it turns out, although county is not significant in our models, it proves useful when we examine our outcomes.
 
 ```{r, warning = FALSE, message = FALSE}
 Model1 <- glm(development_change ~ wetlands + forest  + farm + 
@@ -930,17 +874,20 @@ Model6 <- glm(development_change ~ wetlands + forest  + farm +
               family="binomial"(link="logit"), data = datTrain) 
 ```
 
+#AUSTIN AND ABE REVIEW SLECTION OF **MODEL 6** AND CONFIRM IT IS BEST - AFFECTS 5.3 and 5.4 BELOW -- READ 12.2 IN MICHAELS RMD BEFORE SELECTING (I SPLIT 12.2 into two as 5.2 and 5.3)
 
-Print the summary objects for your models, and choose one to use as your model for the validation and prediction procedure to follow.
+## 5.3 Model Comparison and AIC Evaluation
 
+We **examine model summaries** and **compare Akaike Information Criterion (AIC) scores** to evaluate each model’s fit. While lower AIC values indicate better explanatory power, we ultimately select the model that balances accuracy, generalizability, and interpretability: **Model 6**.
 
+**Summary for Model 6:**
 ```{r}
 
 summary(Model6)
 
 ```
-You can compare the AIC indicators for the models to get a sense of their general capacity to explain variation in your dependent variable. The lower the AIC, the better the goodness of fit - remember, this is NOT the same as model "quality" when it comes to prediction!
 
+**Compare AIC Scores:**
 ```{r}
 data.frame(
   Model = c("Model1", "Model2", "Model3", "Model4", "Model5", "Model6"),
@@ -951,6 +898,89 @@ data.frame(
   theme_minimal()
 
 ```
+
+
+
+
+
+
+
+
+## 5.4 Model Validation
+
+To evaluate the performance of our selected model **(Model 6)**, we begin by applying it to our test dataset. The model returns predicted probabilities for each cell, indicating the likelihood of development between 2011 and 2019.
+
+
+We first examine the distribution of these predicted probabilities through a density plot, comparing the probability distributions for cells that developed and those that did not. This plot helps us identify an appropriate threshold to classify cells as 'predicted to develop' versus 'not predicted to develop'.
+
+```{r}  
+ggplot(testSetProbs, aes(probs)) +
+  geom_density(aes(fill=class), alpha=0.5) +
+  scale_fill_manual(values = palette2,
+                    labels=c("No Change","New Development")) +
+  labs(title = "Histogram of test set predicted probabilities",
+       x="Predicted Probabilities",y="Density") +
+  theme_minimal()
+```
+
+### 5.4.1. Confusion Matrix
+
+We then construct a confusion matrix using a 5% probability threshold, allowing us to quantify prediction accuracy in terms of true positives, false positives, true negatives, and false negatives. These diagnostics offer insight into how well the model distinguishes between the two classes.
+
+```{r}
+testSetProbs$predClass  = ifelse(testSetProbs$probs > .05 ,1,0)
+
+caret::confusionMatrix(reference = as.factor(testSetProbs$class), 
+                       data = as.factor(testSetProbs$predClass), 
+                       positive = "1")
+
+```
+
+### 5.4.2. ROC Curve
+
+Finally, we visualize model discrimination ability using a Receiver Operating Characteristic (ROC) curve. A ROC curve that bows well above the 45-degree baseline suggests strong model performance.
+
+```{r roc_curve, message = FALSE, warning = FALSE}
+
+ggplot(testSetProbs, aes(d = as.numeric(class), m = probs)) + 
+  geom_roc(n.cuts = 50, labels = FALSE) + 
+  style_roc(theme = theme_grey) +
+  geom_abline(slope = 1, intercept = 0, size = 1.5, color = 'grey') +
+  theme_minimal()
+```
+
+
+
+
+
+### 5.4.1 Threshold Selection and Error Analysis
+
+Since threshold choice affects model sensitivity and specificity, we explore the implications of two thresholds: 5% and 17%. A lower threshold increases sensitivity (detecting more change), while a higher threshold improves specificity (avoiding false positives).
+
+To understand where the model performs well—or falls short—we classify each cell in the t2 dataset based on the prediction outcomes at both thresholds. We summarize results by county and visualize spatial distributions of classification results. These maps and summaries help us understand how predictive performance varies spatially across the Charlotte MSA and guide recommendations for planning interventions.
+
+We validate Model 6 using the test set by calculating predicted probabilities and generating a confusion matrix with a 5% classification threshold. This allows us to quantify true positives, false positives, and other prediction outcomes. We also visualize model performance using a ROC curve, confirming that the model distinguishes well between developed and undeveloped cells.
+
+
+
+## 5.5 Threshold Testing and Spatial Error Analysis
+
+To assess the impact of different thresholds, we compare results using 5% and 17% probability cutoffs. These thresholds reflect trade-offs between capturing more true positives versus minimizing false positives. We classify cells accordingly and generate confusion matrix outcomes.
+
+Finally, we evaluate threshold-specific prediction accuracy across counties. Visualizing error categories spatially helps reveal geographic variations in model performance and potential biases. This step is critical in understanding where the model may over- or under-predict development and guides interpretation of the final forecast.
+
+
+
+
+
+
+
+
+
+
+
+# 12. Modeling
+
 
 ## 12.3. Validating our Model Using the Test Set
 
@@ -1250,4 +1280,4 @@ What do you do after you have a geographically specific forecast of likely devel
 
 
 # 17. Credits
-This report is completed as an assignment for the University of Pennsylvania's Spring 2025 course, **CPLN 6750/MUSA 6750: Land Use and Environmental Modeling**, taught by **Michael Fichman** in the Department of City and Regional Planning at the Stuart Weitzman School of Design. This analysis was completed by **Abe Doroshow & Austin Studner (Sutherland)**. The workflow in this Urban Growth Model was created for the course by Michael Fichman, the late Prof. Ken Steif, and Jenna Epstein, and adapted and inspired from the California Urban Futures Model, developed by Prof. Emeritus John Landis. 
+This report is completed as an assignment for the University of Pennsylvania's Spring 2025 course, **CPLN 6750/MUSA 6750: Land Use and Environmental Modeling**, taught by **Michael Fichman** in the Department of City and Regional Planning at the Stuart Weitzman School of Design. This analysis was completed by **Abe Doroshow and Austin Studner (Sutherland)**. The workflow in this Urban Growth Model was created for the course by Michael Fichman, the late Prof. Ken Steif, and Jenna Epstein, and adapted and inspired from the California Urban Futures Model, developed by Prof. Emeritus John Landis. 
