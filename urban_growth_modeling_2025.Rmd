@@ -490,9 +490,8 @@ charlottePop19 <- get_acs(geography = "tract",
                 st_buffer(-1)
 ```
 
-Create choropleth maps to show total population distributed by quintiles, comparing population density in both years (2011 and 2019). This upward shift in population desnsity reflects the Charlotte MSA’s ongoing urbanization, particularly within Mecklenburg County and along key suburban corridors.
+**Create choropleth maps** to show total population distributed by quintiles, comparing population density in both years (2011 and 2019). This upward shift in population desnsity reflects the Charlotte MSA’s ongoing urbanization, particularly within Mecklenburg County and along key suburban corridors.
 
-<div class="superbigimage">
 ```{r, warning = FALSE, message = FALSE, fig.height= 8, fig.width= 11}
 grid.arrange(
 ggplot() +
