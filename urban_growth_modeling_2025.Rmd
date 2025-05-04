@@ -578,6 +578,11 @@ ggplot() +
 
 
 
+
+
+
+
+
 # 7. Transportation And Infrastructure
 
 Accessibility is a key determinant of development potential. The hypothesis here is that the closer a cell is to highway infrastructure, the more likely it is to develop. Accessibility features are engineered by measuring distance from each grid cell to its nearest highway. 
@@ -655,6 +660,13 @@ ggplot() +
   theme_void()
 ```
 
+
+
+
+
+
+
+
 # 8. Calculate spatial lag of development
 
 As we read in Prof. Steif's introductory essay, the core of our modelling approach is the harnassing of spatial endogenaeity - we hypothesize that the likelihood of a cell to develop is (in part) a function of its proximity to existing development. How do we "parameterize" the adjacency or access of each cell relative to existing development? We use "spatial lag" variables like k-nearest-neighbors (knn).
@@ -710,6 +722,11 @@ ggplot() +
 ```
 
 
+
+
+
+
+
 # 9. Political Boundaries
 
 We are going to add information about county boundaries to our data set. This serves two important purposes. First, it might be useful to include municipality as a fixed effect in your models to add information about regulatory "culture" or desirability of different areas. Using a geographic fixed effect adds the "average effect" of a particular area on the dependent variable - commonly this is used as a variable in housing price models to incorporate place-based price signals from things like school district or neighborhood reputation. Second, we can use this information to evaluate and analyze our model outputs - seeing where development is expected to take place and evaluate our errors across space.
@@ -744,6 +761,12 @@ countyFishnet <- charlotteMSA_fishnet %>%
   arrange(as.numeric(uniqueID))
   
 ```
+
+
+
+
+
+
 
 # 10. Creating Our Data Set for Modeling
 
@@ -797,6 +820,12 @@ dat_2019 <-
 
 ```
 
+
+
+
+
+
+
 # 11. Feature Exploration
 
 In this section we explore the extent to our possible predictors are associated with development change. If the goal was to predict a continuous variable, scatterplots and correlation coefficients make this process straightforward and relatively easy to explain to a non-technical decison maker.
@@ -838,6 +867,12 @@ dat_2011 %>%
   dplyr::select(Land_Cover_Type,Conversion_Rate) %>%
   kable() %>% kable_styling(full_width = F)
 ```
+
+
+
+
+
+
 
 # 12. Modeling
 
@@ -1077,6 +1112,12 @@ ggplot() +
 </div>
 
 
+
+
+
+
+
+
 # 13. Making A Forecast
 
 OK, we are ready to use our model to forecast future development. Let's use our model `Model6` with a threshold of 0.17 - this will allow us to make a forecast that isn't quite as conservative and minimizes false negatives.
@@ -1106,6 +1147,13 @@ ggplot(data=dat_2027_preds) +
   labs(title="Development Predictions, 2027") + 
   theme_void()
 ```
+
+
+
+
+
+
+
 
 # 14. Assess Impact
 
@@ -1168,13 +1216,27 @@ dat_2027_preds %>%
 
 ```
 
+
+
+
+
+
+
 # 15. Next Steps - Towards an Allocation Strategy
 
 What do you do after you have a geographically specific forecast of likely development? You can integrate it with population projection information to see if forecasted growth areas seem adequate to accommodate future growth. You can dive in on areas where sensitive lands are at risk and determine if upzoning in other areas of nearby development might accommodate that population. You can compare future scenarios for fragmentation effects. There are myriad possibilities.
 
-# Data Sources
+
+
+
+
+# 16. Data Sources
 
 - **Land Cover Data**: Multi-Resolution Land Characteristics (MRLC) Consortium – [https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover](https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover)
 - **Census Data**: United States Census Bureau – [https://api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html)
 - **Roads Data**: Data.gov, accessed using the `Tigris` R package – [https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads](https://catalog.data.gov/dataset/tiger-line-shapefile-2023-state-north-carolina-primary-and-secondary-roads)
-- **County Boundaries**: North Carolina Department of Transportation – [https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/about](https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/about) how accessible, reproducible spatial models in R can be used to simulate urban futures. The analysis provides a rigorous base for discussing trade-offs, infrastructure needs, and policy levers to guide equitable and sustainable growth in the Charlotte MSA.
+- **County Boundaries**: North Carolina Department of Transportation – [https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/about](https://www.nconemap.gov/datasets/NCDOT::ncdot-county-boundaries/about)
+
+
+# 17. Credits
+This report is completed as an assignment for the University of Pennsylvania Spring 2025 course **CPLN 6750/MUSA 6750: Land Use and Environmental Modeling** in the Department of City and Regional Planning at the Stuart Weitzman School of Design taught by **Michael Fichman**. This was completed by **Abe Doroshow & Austin Studner (Sutherland)**. The workflow in this Urban Growth Model were created by Michael Fichman, the late Prof. Ken Steif, and Jenna Epstein for the course, and adapted and inspired from the California Urban Futures Model, developed by Prof. Emeritus John Landis. 
