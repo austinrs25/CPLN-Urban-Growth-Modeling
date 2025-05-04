@@ -907,12 +907,21 @@ data.frame(
 
 
 ## 5.4 Model Validation
+### 5.4.1. Create Test Set
+To evaluate the performance (forecasting/predictive accuracy) of our selected model **(Model 6)**, we start by applying the trained model onto the test dataset. The model returns predicted probabilities for each cell, indicating the likelihood of development for each cell from 2011 to 2019.
 
-To evaluate the performance of our selected model **(Model 6)**, we begin by applying it to our test dataset. The model returns predicted probabilities for each cell, indicating the likelihood of development between 2011 and 2019.
+**Run Model on Test Set:**
+```{r, warning = FALSE, message = FALSE}
+testSetProbs <- 
+  data.frame(class = datTest$development_change,
+             probs = predict(Model6, datTest, type="response")) 
+```
+We created a new table that includes two things for each location: the actual outcome (whether the land developed or not) and the model’s estimated chance that it would develop. These chances are given as percentages, ranging from 0 (very unlikely) to 1 (very likely).
 
-
+### 5.4.2. Examine Probability Distribution
 We first examine the distribution of these predicted probabilities through a density plot, comparing the probability distributions for cells that developed and those that did not. This plot helps us identify an appropriate threshold to classify cells as 'predicted to develop' versus 'not predicted to develop'.
 
+**Create Density Plot:**
 ```{r}  
 ggplot(testSetProbs, aes(probs)) +
   geom_density(aes(fill=class), alpha=0.5) +
@@ -923,10 +932,10 @@ ggplot(testSetProbs, aes(probs)) +
   theme_minimal()
 ```
 
-### 5.4.1. Confusion Matrix
-
+### 5.4.3. Confusion Matrix
 We then construct a confusion matrix using a 5% probability threshold, allowing us to quantify prediction accuracy in terms of true positives, false positives, true negatives, and false negatives. These diagnostics offer insight into how well the model distinguishes between the two classes.
 
+**Create Confusion Matrix:**
 ```{r}
 testSetProbs$predClass  = ifelse(testSetProbs$probs > .05 ,1,0)
 
@@ -936,10 +945,11 @@ caret::confusionMatrix(reference = as.factor(testSetProbs$class),
 
 ```
 
-### 5.4.2. ROC Curve
+### 5.4.4. ROC Curve
 
 Finally, we visualize model discrimination ability using a Receiver Operating Characteristic (ROC) curve. A ROC curve that bows well above the 45-degree baseline suggests strong model performance.
 
+**Create ROC Curve:**
 ```{r roc_curve, message = FALSE, warning = FALSE}
 
 ggplot(testSetProbs, aes(d = as.numeric(class), m = probs)) + 
@@ -953,13 +963,36 @@ ggplot(testSetProbs, aes(d = as.numeric(class), m = probs)) +
 
 
 
+
+
 ### 5.4.1 Threshold Selection and Error Analysis
 
 Since threshold choice affects model sensitivity and specificity, we explore the implications of two thresholds: 5% and 17%. A lower threshold increases sensitivity (detecting more change), while a higher threshold improves specificity (avoiding false positives).
 
-To understand where the model performs well—or falls short—we classify each cell in the t2 dataset based on the prediction outcomes at both thresholds. We summarize results by county and visualize spatial distributions of classification results. These maps and summaries help us understand how predictive performance varies spatially across the Charlotte MSA and guide recommendations for planning interventions.
+```{r, warning = FALSE, message = FALSE}
+dat_2011_preds <-         
+  dat_2011 %>%
+    mutate(probs = predict(Model6, dat_2011, type="response")) %>%
+   mutate(Threshold_5_Pct = as.factor(ifelse(probs >= 0.05 ,1,0)),
+           Threshold_17_Pct =  as.factor(ifelse(probs >= 0.17 ,1,0))) %>%
+  mutate(confResult_05 =case_when(Threshold_5_Pct == 0 & development_change == 0 ~ "True_Negative",
+                              Threshold_5_Pct == 1 & development_change==1 ~ "True_Positive",
+                              Threshold_5_Pct == 0 & development_change==1 ~ "False_Negative",
+                              Threshold_5_Pct == 1 & development_change ==0 ~ "False_Positive")) %>%
+  mutate(confResult_17 =case_when(Threshold_17_Pct == 0 & development_change == 0 ~ "True_Negative",
+                              Threshold_17_Pct == 1 & development_change==1 ~ "True_Positive",
+                              Threshold_17_Pct == 0 & development_change==1 ~ "False_Negative",
+                              Threshold_17_Pct == 1 & development_change ==0 ~ "False_Positive")) %>%
+  st_as_sf()
+```
 
-We validate Model 6 using the test set by calculating predicted probabilities and generating a confusion matrix with a 5% classification threshold. This allows us to quantify true positives, false positives, and other prediction outcomes. We also visualize model performance using a ROC curve, confirming that the model distinguishes well between developed and undeveloped cells.
+To understand where the model does or does not performs well,we classify each cell in the t2 dataset based on the prediction outcomes at both thresholds. We summarize results by county and visualize spatial distributions of classification results. These maps and summaries help us understand how predictive performance varies spatially across the Charlotte MSA and guide recommendations for planning interventions.
+
+
+
+We validate **Model 6** using the test set by calculating predicted probabilities and generating a confusion matrix with a 5% classification threshold. This allows us to quantify true positives, false positives, and other prediction outcomes. We also visualize model performance using a ROC curve, confirming that the model distinguishes well between developed and undeveloped cells.
+
+
 
 
 
@@ -967,9 +1000,26 @@ We validate Model 6 using the test set by calculating predicted probabilities an
 
 To assess the impact of different thresholds, we compare results using 5% and 17% probability cutoffs. These thresholds reflect trade-offs between capturing more true positives versus minimizing false positives. We classify cells accordingly and generate confusion matrix outcomes.
 
+
+
 Finally, we evaluate threshold-specific prediction accuracy across counties. Visualizing error categories spatially helps reveal geographic variations in model performance and potential biases. This step is critical in understanding where the model may over- or under-predict development and guides interpretation of the final forecast.
 
-
+**Map Development Prediction Accuracy (Errors) By Threshold:**
+<div class="superbigimage">
+```{r, warning = FALSE, message= FALSE, fig.height = 6, fig.width= 8}
+ggplot() +
+  geom_sf(data= dat_2011_preds %>%
+            st_centroid() %>%
+               dplyr::select(confResult_05, confResult_17, geometry) %>%
+               gather(key = "Variable", value = "Value", -geometry), 
+             aes(colour=Value)) +
+  facet_wrap(~Variable) +
+  scale_colour_manual(values = c("red", "yellow", "blue", "grey"), labels=c("False Negative","False Positive", "True Negative", "True Positive"),
+                      name="") +
+  labs(title="Development Predictions - By Threshold") + 
+  theme_void()
+```
+</div>
 
 
 
@@ -980,82 +1030,6 @@ Finally, we evaluate threshold-specific prediction accuracy across counties. Vis
 
 
 # 12. Modeling
-
-
-## 12.3. Validating our Model Using the Test Set
-
-We create a new data frame `testSetProbs` that consists of our `class` (e.g. development_change as a 1 or 0), and `probs` - which is the prediction for each observation in our test set using `Model6`. The `type` parameter is set to `response`, which means our `probs` are measures of estimated probability from 0-1.
-
-```{r, warning = FALSE, message = FALSE}
-testSetProbs <- 
-  data.frame(class = datTest$development_change,
-             probs = predict(Model6, datTest, type="response")) 
-```
-
-This density plot is a key tool to figure out where we will set our threshold for classifying predicted probabilities as 1's or 0's (eg Predicted to Develop or Predicted Not To Develop).
-
-Take a close look at this plot and see if you have some ideas about what threshold would separate out our 1's from our 0's most effectively with a minimum of error.
-
-```{r}  
-ggplot(testSetProbs, aes(probs)) +
-  geom_density(aes(fill=class), alpha=0.5) +
-  scale_fill_manual(values = palette2,
-                    labels=c("No Change","New Development")) +
-  labs(title = "Histogram of test set predicted probabilities",
-       x="Predicted Probabilities",y="Density") +
-  theme_minimal()
-```
-
-
-### 12.3.1. Confusion matrix
-
-Let's say that 0.05 is a good cutoff value - above that value, we predict that cell is a `1`, and below it, a `0`.
-
-Let's build a confusion matrix to see how accurate this model is overall, and what our error rates are.
-
-It helps to write out in plain language what our four outcomes are:
-
-- True Positive: We predicted a cell would convert from undeveloped to developed and it *did* convert.
-
-- False Positive: We predicted a cell would convert from undeveloped to developed and it *did not* convert.
-
-- True Negative: We predicted a cell would *not* convert from undeveloped to developed and it *did not* convert.
-
-- False Negative: We predicted a cell would *not* convert from undeveloped to developed and it *did* convert.
-
-If you want to adjust model performance, or use a different model, you can change the model type in the previous step and/or change the threshold in this step (see the first line of code) and compare the performance.
-
-```{r}
-testSetProbs$predClass  = ifelse(testSetProbs$probs > .05 ,1,0)
-
-caret::confusionMatrix(reference = as.factor(testSetProbs$class), 
-                       data = as.factor(testSetProbs$predClass), 
-                       positive = "1")
-
-```
-
-### 12.3.2. ROC Curve
-
-One more indicator of model performance - the ROC curve. Do we have a "healthy" looking curve? Above the y=x line, not a "hard elbow" shape, and relatively convex?
-
-In this case, we certainly do.
-
-```{r roc_curve, message = FALSE, warning = FALSE}
-
-ggplot(testSetProbs, aes(d = as.numeric(class), m = probs)) + 
-  geom_roc(n.cuts = 50, labels = FALSE) + 
-  style_roc(theme = theme_grey) +
-  geom_abline(slope = 1, intercept = 0, size = 1.5, color = 'grey') +
-  theme_minimal()
-```
-
-## 12.4. Analyzing Error
-
-Now that we have our model, we want to assess our errors across our entire *t2* data set for a few different thresholds and do some "generalizability" tests. 
-
-We should think critically about model thresholds. What does a planner want to optimize for in this situation? Are we mainly concerned with correctly predicting development (True Positives)? What if that means we erroneously predict some areas that *did change* as *no change* (False Negatives)? 
-
-Let's say, for our purposes, that we want to be generous about predicting change, so we have a more general spatial understanding of where change *might* take place, and not accidentally overlook an area where we miss the trend because we were too conservative. You are welcome to take a different approach to this question when you do such a model for yourself - this is a context-dependent choice.
 
 ### 12.4.1. Setting a Threshold
 
@@ -1090,6 +1064,11 @@ dat_2011_preds <-
   st_as_sf()
 ```
 
+
+
+
+
+
 Now we can summarize our results by threshold *and* by any other category in our data to see how these thresholds affect our errors.
 
 Let's cross-tabulate our errors by threshold and by County. Do we think there are combinations of county and threshold that are sub-optimal?
@@ -1114,6 +1093,10 @@ dat_2011_preds %>%
 
 ```
 
+
+
+
+
 We can also map our errors and see how our threshold choices manifest themselves across space in our study area.
 
 Notice how the spatial pattern of True Positives for both thresholds is relatively consistent, but the 5% threshold misses most the study area with respect to True Negatives.
@@ -1133,6 +1116,12 @@ ggplot() +
   theme_void()
 ```
 </div>
+
+
+
+
+
+
 
 
 
