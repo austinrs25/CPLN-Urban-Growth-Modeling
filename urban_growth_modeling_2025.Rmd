@@ -964,88 +964,13 @@ ggplot(testSetProbs, aes(d = as.numeric(class), m = probs)) +
 
 
 
+## 5.5. Analyze Prediction Errors
 
-### 5.4.1 Threshold Selection and Error Analysis
+With our model trained and validated, we now assess its predictive accuracy across the full dataset for 2019, focusing on how different classification thresholds affect the model’s generalizability. Since most cells in the Charlotte MSA did not develop between 2011 and 2019, threshold selection plays a critical role in balancing sensitivity (correctly identifying change) and specificity (correctly identifying no change).
 
-Since threshold choice affects model sensitivity and specificity, we explore the implications of two thresholds: 5% and 17%. A lower threshold increases sensitivity (detecting more change), while a higher threshold improves specificity (avoiding false positives).
+### 5.5.1 Set Thresholds and Create Predictions
 
-```{r, warning = FALSE, message = FALSE}
-dat_2011_preds <-         
-  dat_2011 %>%
-    mutate(probs = predict(Model6, dat_2011, type="response")) %>%
-   mutate(Threshold_5_Pct = as.factor(ifelse(probs >= 0.05 ,1,0)),
-           Threshold_17_Pct =  as.factor(ifelse(probs >= 0.17 ,1,0))) %>%
-  mutate(confResult_05 =case_when(Threshold_5_Pct == 0 & development_change == 0 ~ "True_Negative",
-                              Threshold_5_Pct == 1 & development_change==1 ~ "True_Positive",
-                              Threshold_5_Pct == 0 & development_change==1 ~ "False_Negative",
-                              Threshold_5_Pct == 1 & development_change ==0 ~ "False_Positive")) %>%
-  mutate(confResult_17 =case_when(Threshold_17_Pct == 0 & development_change == 0 ~ "True_Negative",
-                              Threshold_17_Pct == 1 & development_change==1 ~ "True_Positive",
-                              Threshold_17_Pct == 0 & development_change==1 ~ "False_Negative",
-                              Threshold_17_Pct == 1 & development_change ==0 ~ "False_Positive")) %>%
-  st_as_sf()
-```
-
-To understand where the model does or does not performs well,we classify each cell in the t2 dataset based on the prediction outcomes at both thresholds. We summarize results by county and visualize spatial distributions of classification results. These maps and summaries help us understand how predictive performance varies spatially across the Charlotte MSA and guide recommendations for planning interventions.
-
-
-
-We validate **Model 6** using the test set by calculating predicted probabilities and generating a confusion matrix with a 5% classification threshold. This allows us to quantify true positives, false positives, and other prediction outcomes. We also visualize model performance using a ROC curve, confirming that the model distinguishes well between developed and undeveloped cells.
-
-
-
-
-
-## 5.5 Threshold Testing and Spatial Error Analysis
-
-To assess the impact of different thresholds, we compare results using 5% and 17% probability cutoffs. These thresholds reflect trade-offs between capturing more true positives versus minimizing false positives. We classify cells accordingly and generate confusion matrix outcomes.
-
-
-
-Finally, we evaluate threshold-specific prediction accuracy across counties. Visualizing error categories spatially helps reveal geographic variations in model performance and potential biases. This step is critical in understanding where the model may over- or under-predict development and guides interpretation of the final forecast.
-
-**Map Development Prediction Accuracy (Errors) By Threshold:**
-<div class="superbigimage">
-```{r, warning = FALSE, message= FALSE, fig.height = 6, fig.width= 8}
-ggplot() +
-  geom_sf(data= dat_2011_preds %>%
-            st_centroid() %>%
-               dplyr::select(confResult_05, confResult_17, geometry) %>%
-               gather(key = "Variable", value = "Value", -geometry), 
-             aes(colour=Value)) +
-  facet_wrap(~Variable) +
-  scale_colour_manual(values = c("red", "yellow", "blue", "grey"), labels=c("False Negative","False Positive", "True Negative", "True Positive"),
-                      name="") +
-  labs(title="Development Predictions - By Threshold") + 
-  theme_void()
-```
-</div>
-
-
-
-
-
-
-
-
-
-# 12. Modeling
-
-### 12.4.1. Setting a Threshold
-
-Let's compare two different thresholds - 5% and 17%. In plain English, this means that if a predicted probability is greater than 0.05, under the 5% regime, we say "this is classified as a 1".  At a 5% threshold we correctly predict a higher rate of new development areas (True Positive Rate), but incorrectly predicts more no change areas (True Negative Rate).  Conversely, the 17% threshold has a lower True Positive rate and but a far higher True Negative rate. Because most of our cells do not change from *t1* to *t2*, this leads to higher accuracy.
-
-What you think is better here as a threshold? This is a matter of your expertise.
-
-The mechanics of the code below are as follows. 
-
-- We create a new sf object called `dat_2011_preds` starting with `dat_2011` (our whole `t2` data set). 
-
-- We pipe in a mutate command, where we first use the `predict` function to generate probability estimates for each row in `dat_2011` using our model of choice, `Model6`. These estimates are stored in a column called `probs`.
-
-- In a second `mutate` command, we create two new columns classifying our predictions based on `ifelse` statements. e.g. "If `probs` is greater or equal to 0.05, set `Threshold_5_Pct` equal to 1, else set it equal to 0"
-
-- We subsequently use mutate statements to create columns that reflect the accuracy of these classifications using `case_when` statements - which is basically an elaborate `ifelse` statement based on a bunch of conditions - e.g. "If the `Threshold_5_Pct` is a 1, and `development_change` (e.g. the observed), set `confResult_05` to "True_Negative", etc.,
+We test two probability thresholds: 5% and 17%. A lower (5%) threshold captures more development (higher true positive rate) but also results in more false positives. A higher (17%) threshold is more conservative, predicting less change but increasing specificity. To compare performance, we generate predicted probabilities for each cell and then classify those probabilities using both thresholds. We also label the resulting prediction outcomes using categories like "True Positive" and "False Negative".
 
 ```{r, warning = FALSE, message = FALSE}
 dat_2011_preds <-         
@@ -1064,14 +989,9 @@ dat_2011_preds <-
   st_as_sf()
 ```
 
+### 5.5.2 Evaluating Errors by County
 
-
-
-
-
-Now we can summarize our results by threshold *and* by any other category in our data to see how these thresholds affect our errors.
-
-Let's cross-tabulate our errors by threshold and by County. Do we think there are combinations of county and threshold that are sub-optimal?
+Next, we summarize classification outcomes by county and threshold to examine how performance varies geographically. This helps identify counties where the model is over- or under-predicting development.
 
 ```{r}
 
@@ -1093,14 +1013,11 @@ dat_2011_preds %>%
 
 ```
 
+### 5.5.3 Mapping Prediction Outcomes
 
+Finally, we visualize the spatial distribution of prediction errors for both thresholds across counties. These maps provide insight into which areas of the Charlotte MSA the model predicts more reliably and where further refinement may be needed.
 
-
-
-We can also map our errors and see how our threshold choices manifest themselves across space in our study area.
-
-Notice how the spatial pattern of True Positives for both thresholds is relatively consistent, but the 5% threshold misses most the study area with respect to True Negatives.
-
+**Map Development Prediction Accuracy (Errors) By Threshold:**
 <div class="superbigimage">
 ```{r, warning = FALSE, message= FALSE, fig.height = 6, fig.width= 8}
 ggplot() +
@@ -1116,8 +1033,6 @@ ggplot() +
   theme_void()
 ```
 </div>
-
-
 
 
 
