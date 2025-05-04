@@ -1,5 +1,5 @@
 ---
-title: "CPLN 6750 - Urban Growth Modeling Assignment, Spring 2025"
+title: "Urban Growth Forecast: Charlotte, NC (CPLN 6750 Final Project, Spring 2025)"
 author: "Abe Doroshow & Austin Studner-Sutherland"
 date: "5/10/2025"
 output:
@@ -27,11 +27,18 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 </style>
 
-# 1. Introduction
+# 1. Introduction and Planning Rationale
 
-*Insert introduction here*
+Charlotte, North Carolina, is one of the fastest-growing metro areas in the southeastern United States. It's population grew by 35.2% from 2000 to 2010 and 19.6% from 2010 to 2020, and its forecasted to grow an additional 14.1% from 2020 to 2030. This project aims to forecast urban development in the Charlotte Metropolitan Area, specifically Mecklenburg, Cabarrus, Gaston, and Union counties, by the year 2031. The forecast is based on land cover change from 2011 to 2021 and uses a logistic regression model to project future development patterns. This scenario includes a proposed --- new highway running from southeastern Mecklenburg into downtown Charlotte, designed to increase connectivity and redirect growth pressure. ---
 
-# 1.2. The Workflow
+Our objective is to support proactive growth management by identifying areas at risk for sprawl, encroachment on environmentally sensitive lands, and potential conflicts with existing infrastructure or planning goals. The Charlotte region presents a valuable case study due to its ongoing growth.
+
+# 1.2. Data Acquisition and Preparation
+
+We obtained land cover data from the Multi-Resolution Land Characteristics (MRLC) consortium (https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover), covering 2011 and 2019. Census and infrastructure datasets were sourced from federal and local open data repositories. All datasets were clipped to the study region and rasterized to a uniform resolution to enable pixel-level predictive modeling.
+
+
+# 1.3. The Workflow
 
 *Explain workflow here*
 
