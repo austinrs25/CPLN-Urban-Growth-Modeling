@@ -492,6 +492,7 @@ charlottePop19 <- get_acs(geography = "tract",
 
 Create choropleth maps to show total population distributed by quintiles, comparing population density in both years (2011 and 2019). This upward shift in population desnsity reflects the Charlotte MSA’s ongoing urbanization, particularly within Mecklenburg County and along key suburban corridors.
 
+<div class="superbigimage">
 ```{r, warning = FALSE, message = FALSE, fig.height= 8, fig.width= 11}
 grid.arrange(
 ggplot() +
@@ -543,8 +544,8 @@ fishnetPopulation19 <- charlotteMSA_fishnet %>%
 
 This transformation addresses the Modifiable Areal Unit Problem (MAUP) inherent in tract-level data and enhances the spatial resolution of our model inputs. When visualized, these population layers reveal spatial densification patterns across the Charlotte region, with a clear concentration of growth in urban and near-suburban areas.
 
-Map AWI Transformations:
-<div class="superbigimage">
+**Map AWI Transformations:**
+<div class="superbigimage"> 
 ```{r, warning = FALSE, message = FALSE, fig.height = 8, fig.width= 11}
 grid.arrange(
 ggplot() +
