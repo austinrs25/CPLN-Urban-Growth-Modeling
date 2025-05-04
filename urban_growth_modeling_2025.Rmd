@@ -174,7 +174,7 @@ charlotteMSA %>% st_transform(2264)
 
 To detect land use change between 2011 (t1) and 2019 (t2), we begin by analyzing land cover rasters for the Charlotte MSA. These rasters are processed to highlight locations where land converted from undeveloped to developed. This binary change variable becomes the dependent variable in our logistic regression model.
 
-**Load Land Cover Data and Clip Raster to Study Area:**
+**Load 2011 Land Cover Data and Clip Raster to Study Area:**
 
 ```{r}
 
@@ -187,6 +187,7 @@ lc_2011 <- get_nlcd(
 
 ```
 
+**Load 2019 Land Cover Data and Clip Raster to Study Area:**
 ```{r}
 
 lc_2019 <- get_nlcd(
