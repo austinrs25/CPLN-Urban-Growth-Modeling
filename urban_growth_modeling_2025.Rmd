@@ -198,9 +198,9 @@ lc_2019 <- get_nlcd(
 
 ```
 
-**Resample Rasters**
+**Resample Rasters:**
 
-Given the high resolution of NLCD rasters (30 meters), we resample them to coarser grids to improve processing speed and reduce memory demands during modeling. We use the `aggregate` function from the `raster` package with the `modal` function to summarize land cover within larger cells—preserving the dominant land type.
+Given the high resolution of NLCD rasters (30 meters), we resample them to coarser grids to improve processing speed and reduce memory demands during modeling. We use the `aggregate` function from the `raster` package with the `modal` function to summarize land cover within larger cells, preserving the dominant land type.
 
 ```{r}
 lc_2011_rs <- aggregate(lc_2011, fact = 30, fun = "modal")
@@ -209,7 +209,7 @@ lc_2019_rs <- aggregate(lc_2019, fact = 30, fun = "modal")
 
 ```
 
-**Reclassify Land Cover as Developend and Undeveloped**
+**Reclassify Land Cover as Developend and Undeveloped:**
 
 We reclassify the resampled rasters into two categories: developed (NLCD codes 21–24) and undeveloped (all other codes). This results in a simplified binary classification of each cell for both t1 and t2. 
 
@@ -231,7 +231,7 @@ developed_2019 <-
 
 ```
 
-**Detect Change from 2011 (t1) to 2018 (t2)**
+**Detect Change from 2011 (t1) to 2018 (t2):**
 
 Change is then detected using map algebra, identifying cells that were undeveloped in t1 and developed in t2. Cells with no change are assigned NA, allowing us to focus modeling efforts on the subset of cells where development did occur.
 
@@ -241,27 +241,21 @@ development_change <- developed_2011 + developed_2019
 
 ```
 
-**Visualizing Development Change**
+**Visualize Development Change:**
 
 We use the `mapview` package to visualize the resulting change raster interactively. This allows for quick inspection of spatial development patterns and supports verification of our reclassification and change detection steps.
 
-*histogram shows frequency of change from undeveloped to developed between 2011 and 2019*
-
-The 1's represent the change.
+Create histogram to illustrate frequency of conversion from undeveloped to developed between 2011 and 2019 where the 1's represent change. O's and 2's represent no change where 0's demarcate land being undeveloped in both periods and 2 demarcate land be developed in both periods - this presumes no land when from developed to undeveloped.
 
 ```{r, warning = FALSE, message = FALSE}
 hist(development_change)
 ```
 
-*remove 2's and 0's*
+Create a map from raster to illustrate land cover change, first removing 0's (undeveloped lands) and 2's (developed lands), where 1's represent change (from undeveloped to devloped):
 
 ```{r, warning = FALSE, message = FALSE}
 development_change[development_change != 1] <- NA
 ```
-
-## 3.3. Examining Land Cover Change
-
-*view land cover change raster on map*
 
 ```{r}
 mapView(development_change)
