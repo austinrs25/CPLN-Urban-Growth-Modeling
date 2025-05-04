@@ -323,8 +323,8 @@ ggplot() +
 
 To enhance model accuracy, we reclassify the full land cover dataset into broader land use categories: developed, forest, farm, wetlands, other undeveloped, and water. This simplification improves interpretability and reduces data sparsity.
 
-| Old_Classification                           | New_Classification     |
-|----------------------------------------------|------------------------|
+| Old_Classification                                     | New_Classification  |
+|--------------------------------------------------------|---------------------|
 | Open Space as well as Low, Medium and High Intensity Development | Developed |
 | Deciduous, Evergreen, and Mixed Forest |  Forest |
 | Pasture/Hay and Cultivated Crops | Farm |
