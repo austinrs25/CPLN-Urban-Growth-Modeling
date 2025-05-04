@@ -609,7 +609,7 @@ ggplot() +
 
 
 
-# I BELIEVE THIS STEP (CODE AND NARRATIVE TEXT) WILL NEED TO BE ADJUSTED TO INCLUDE NEW HIGHWAY FOR T3 FORECAST  -- **REFERENCE 7.2 IN MICHAEL'S RMD** -- CREATE A BEFORE AND AFTER, SO LIKELY COPY AND PASTE AND ONLY ADJUST THE PASTED CODE SO THE CURRENT CODE CAN STAY AND REPRESENT THE BEFORE AND YOUR PASTED AND THEN EDITED CODE WILL REPRESENT THE AFTER
+# ALERT  ------- I BELIEVE THIS STEP (CODE AND NARRATIVE TEXT) WILL NEED TO BE ADJUSTED TO INCLUDE NEW HIGHWAY FOR T3 FORECAST  -- **REFERENCE 7.2 IN MICHAEL'S RMD** -- CREATE A BEFORE AND AFTER, SO LIKELY COPY AND PASTE AND ONLY ADJUST THE PASTED CODE SO THE CURRENT CODE CAN STAY AND REPRESENT THE BEFORE AND YOUR PASTED AND THEN EDITED CODE WILL REPRESENT THE AFTER  ------- 
 
 
 
@@ -653,7 +653,7 @@ ggplot() +
 ```
 
 
-# REMOVE THIS LINE AND MY COMMENT LINE WHEN COMPLETE
+# ALERT ------- REMOVE THIS LINE AND MY COMMENT LINE WHEN COMPLETE ------- 
 
 
 
@@ -875,7 +875,11 @@ Model6 <- glm(development_change ~ wetlands + forest  + farm +
               family="binomial"(link="logit"), data = datTrain) 
 ```
 
-#AUSTIN AND ABE REVIEW SLECTION OF **MODEL 6** AND CONFIRM IT IS BEST - AFFECTS 5.3 and 5.4 BELOW -- READ 12.2 IN MICHAELS RMD BEFORE SELECTING (I SPLIT 12.2 into two as 5.2 and 5.3)
+
+
+# ALERT ------- AUSTIN AND ABE REVIEW SLECTION OF **MODEL 6** AND CONFIRM IT IS BEST - AFFECTS 5.3 and 5.4 BELOW -- READ 12.2 IN MICHAELS RMD BEFORE SELECTING (I SPLIT 12.2 into two as 5.2 and 5.3)  ------- 
+
+
 
 ## 5.3 Model Comparison and AIC Evaluation
 
@@ -899,13 +903,6 @@ data.frame(
   theme_minimal()
 
 ```
-
-
-
-
-
-
-
 
 ## 5.4 Model Validation
 ### 5.4.1. Create Test Set
@@ -960,11 +957,6 @@ ggplot(testSetProbs, aes(d = as.numeric(class), m = probs)) +
   theme_minimal()
 ```
 
-
-
-
-
-
 ## 5.5. Analyze Prediction Errors
 
 With our model trained and validated, we now assess its predictive accuracy across the full dataset for 2019, focusing on how different classification thresholds affect the model’s generalizability. Since most cells in the Charlotte MSA did not develop between 2011 and 2019, threshold selection plays a critical role in balancing sensitivity (correctly identifying change) and specificity (correctly identifying no change).
@@ -1010,8 +1002,6 @@ dat_2011_preds %>%
   kable() %>%
   kable_styling()
 
-
-
 ```
 
 ### 5.5.3 Mapping Prediction Outcomes
@@ -1035,6 +1025,14 @@ ggplot() +
 ```
 </div>
 
+These diagnostics reveal the practical implications of our model and support its use for guiding policy decisions in transportation planning and growth management.
+
+
+
+
+
+
+# ALERT  ------- FOR ABE
 
 
 
@@ -1042,30 +1040,25 @@ ggplot() +
 
 
 
+# 6. Forcaseting
 
+Having validated the accuracy of our model, we now apply it to generate a forecast for urban development in the Charlotte region for the year 2027. This forecast uses `t2` data (2019), incorporating the same variables used in training and also includes the updated ** ---------- ALERT distance-to-infrastructure ALERT ---------- ** layer reflecting the proposed new highway.
 
+We use **Model 6**, our final logistic regression model, and apply a 17% classification threshold. This threshold was chosen based on our validation analysis, as it balances sensitivity (capturing new development) with specificity (limiting false positives).
 
-
-# 13. Making A Forecast
-
-OK, we are ready to use our model to forecast future development. Let's use our model `Model6` with a threshold of 0.17 - this will allow us to make a forecast that isn't quite as conservative and minimizes false negatives.
-
-Let's create an sf object called `dat_2027_preds` by feeding our `t2` data to `Model6`.
-
-*To create a forecast that incorporates new transportation infrastructure - your dat_2019 should have distance to transportation that was calculated using a shape that has a new highway as part of its geometry.*
+**Create Shapefile:**
+Generate a new spatial object where each cell is labeled with its forecasted development status by 2027. Predictions are based on the modeled probability of change, with values above 0.17 flagged as likely to develop.
 
 ```{r}
 dat_2027_preds <- dat_2019 %>%
     mutate(probs = predict(Model6, dat_2019, type="response") ,
            Prediction = as.factor(ifelse(probs >= 0.17 ,1,0))) %>%
   st_as_sf()
-  
 
 ```
 
-
-Now lets map it - where are the cells that are classified as likely to develop by 2027?
-
+**Visualize 2027 Predictions:**
+Visualize the forecast using a spatial plot, identifying areas across Mecklenburg, Cabarrus, Gaston, and Union counties that are most at risk of development pressure from the propsed highway.
 
 ```{r, warning = FALSE, message = FALSE, fig.height= 8, fig.width= 8 }
 ggplot(data=dat_2027_preds) +
@@ -1075,25 +1068,14 @@ ggplot(data=dat_2027_preds) +
   labs(title="Development Predictions, 2027") + 
   theme_void()
 ```
+The resulting map displays the spatial distribution of expected development, providing a basis for planning decisions that prioritize infrastructure alignment, environmental protection, and equitable growth management.
 
 
+# 7. Impact Assessment
 
+With the 2028 development forecast complete, we now assess the scale and distribution of predicted growth across the Charlotte Metropolitan Area. This step is essential for planners to anticipate infrastructure needs, protect sensitive lands, and align policies with projected development demand.
 
-
-
-
-
-# 14. Assess Impact
-
-Once we have a forecast, it's the planner's job to think about how to react to the likely impacts of this anticipated demand with a strategy for allocating development through the use of planning - incentives, regulations etc.,
-
-There is a lot of exploratory analysis you might want to do with your model outputs. For example, you could use the `mapview` package to make a quick interactive map and explore communities in your study area in more detail. You can spatially cross-reference your prediction with data found in supplementary data sets, like parks, parcels and other land use data.
-
-## 14.1. Impact Assessment
-
-How much land is anticipated to convert by 2027? How much in total? How much by county? How much sensitive land is expected to convert?
-
-Overall land forecasted land conversion can be converted from cells to raw area by multiplying by the cell resolution - `res(lc_2019_rs)[1]`
+We begin by calculating the total amount of land projected to convert from undeveloped to developed. The forecasted cells classified as '1' are multiplied by the raster resolution to estimate area in square meters, square kilometers, and square miles.
 
 ```{r}
 dat_2027_preds %>%
@@ -1109,7 +1091,7 @@ dat_2027_preds %>%
 
 ```
 
-County-by-county forecast:
+Next, we break down these results by county to explore how growth is likely to be distributed across Mecklenburg, Cabarrus, Gaston, and Union counties.
 
 ```{r}
 dat_2027_preds %>%
@@ -1126,7 +1108,7 @@ dat_2027_preds %>%
 
 ```
 
-Forecast by `t2` land cover type:
+Lastly, we evaluate development by existing land cover type to determine which land cover type areas are most at risk. This insight supports proactive land use planning and conservation.
 
 ```{r}
 dat_2027_preds %>%
@@ -1143,6 +1125,42 @@ dat_2027_preds %>%
   kable_styling ()
 
 ```
+
+This impact assessment provides the quantitative foundation needed to interpret the spatial and environmental implications of forecasted development.
+
+
+
+
+
+
+
+
+
+
+
+
+# 8. Next Steps: Toward an Allocation Strategy
+
+Now that we have a spatially explicit forecast of likely development across the Charlotte MSA, the next phase is to develop a planning strategy to manage that growth. This involves aligning policy tools with predicted development pressure to guide growth toward desirable outcomes.
+
+Here are a few ways you can build on this analysis:
+
+- **Integrate with Population and Employment Projections**: Compare the total forecasted developed area with regional growth forecasts published by the local MPO or state agencies. Are the predicted areas adequate to accommodate projected demand?
+
+- **Target Growth with Zoning Tools**: Use zoning overlays, such as upzoning in areas with high predicted development and existing infrastructure, to concentrate growth. TOD overlays around proposed transportation corridors could further amplify model-consistent growth.
+
+- **Protect Sensitive Land**: Overlay the forecast map with conservation data layers (e.g., wetlands, floodplains, or habitat zones). Consider strategies such as conservation easements or transfer of development rights (TDR) to minimize encroachment.
+
+- **Compare Alternate Scenarios**: Model additional infrastructure projects or policy interventions and re-run forecasts. Compare the outcomes to assess trade-offs in sprawl, equity, or environmental impact.
+
+- **Quantify Fragmentation Risk**: Evaluate whether development patterns lead to fragmentation of open space or habitat corridors. Metrics such as patch size or proximity to intact landscapes can inform this analysis.
+
+By pursuing these steps, planners can translate the raw forecast into a strategic plan that manages future development in a way that aligns with Charlotte’s sustainability, equity, and growth management goals.
+
+
+
+
+
 
 
 
@@ -1161,10 +1179,10 @@ What do you do after you have a geographically specific forecast of likely devel
 
 #TO DO
 
-## Model Deployment and Interpretation
+## Confirm Using **Model 6** for Model Deployment and Interpretation
 ### Model results (summary), threshold selection, and validation (confusion matrix and exploration of errors)
 
-## 2031 Forecast Results
+## 2028 Forecast Results
 ### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
 
 ## Recommendations for Charlotte MSA
