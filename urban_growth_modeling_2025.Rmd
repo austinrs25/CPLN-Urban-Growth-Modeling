@@ -609,8 +609,12 @@ ggplot() +
 
 
 
-# ALERT  ------- I BELIEVE THIS STEP (CODE AND NARRATIVE TEXT) WILL NEED TO BE ADJUSTED TO INCLUDE NEW HIGHWAY FOR T3 FORECAST  -- **REFERENCE 7.2 IN MICHAEL'S RMD** -- CREATE A BEFORE AND AFTER, SO LIKELY COPY AND PASTE AND ONLY ADJUST THE PASTED CODE SO THE CURRENT CODE CAN STAY AND REPRESENT THE BEFORE AND YOUR PASTED AND THEN EDITED CODE WILL REPRESENT THE AFTER  ------- 
 
+* ALERT 1
+-----------------------
+TO DO: Include the hypothetical transport features for t3 forecast
+COMMENT: I think we’ll need to revise this step below (both the code and narrative) to reflect the inclusion of the new highway in the t3 forecast - I could be wrong that it is not this step though. Refer to Section 7.2 in Michael’s RMD for guidance. The best approach is likely to duplicate the current code to represent the "before" scenario, and then modify the copied version to reflect the "after" scenario with the updated highway input. This way, we preserve both versions for comparison.
+-----------------------
 
 
 **Calculate Distance to Highways:**
@@ -652,10 +656,7 @@ ggplot() +
   theme_void()
 ```
 
-
-# ALERT ------- REMOVE THIS LINE AND MY COMMENT LINE WHEN COMPLETE ------- 
-
-
+* ALERT 1 END
 
 
 
@@ -877,8 +878,14 @@ Model6 <- glm(development_change ~ wetlands + forest  + farm +
 
 
 
-# ALERT ------- AUSTIN AND ABE REVIEW SLECTION OF **MODEL 6** AND CONFIRM IT IS BEST - AFFECTS 5.3 and 5.4 BELOW -- READ 12.2 IN MICHAELS RMD BEFORE SELECTING (I SPLIT 12.2 into two as 5.2 and 5.3)  ------- 
 
+
+
+
+* ALERT 2
+-----------------------
+TO DO: Austin and Abe, review selection of Model 6 and confirm that it’s the best choice for our forecast. This decision impacts rest of Section 5 below. Before determining, take a look at Section 12.2 in Michael’s RMD (note: I’ve split that section (12.2) into 5.2 and 5.3 in our version for clarity).
+-----------------------
 
 
 ## 5.3 Model Comparison and AIC Evaluation
@@ -1028,16 +1035,17 @@ ggplot() +
 These diagnostics reveal the practical implications of our model and support its use for guiding policy decisions in transportation planning and growth management.
 
 
+* ALERT 2 END
 
-
-
-
-# ALERT  ------- FOR ABE
 
 
 
 
 
+* ALERT 3
+-----------------------
+TO DO: Abe - Revise Steps 6 on
+-----------------------
 
 
 # 6. Forcaseting
@@ -1126,10 +1134,12 @@ dat_2027_preds %>%
 
 ```
 
-This impact assessment provides the quantitative foundation needed to interpret the spatial and environmental implications of forecasted development.
-
-
-
+* ALERT 4
+-----------------------
+ANSWER DELIVERABLE: Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
+DRAFT: This impact assessment provides the quantitative foundation needed to interpret the spatial and environmental implications of proposed highway and forecasted development...
+-----------------------
+* ALERT 4 END
 
 
 
@@ -1192,7 +1202,7 @@ What do you do after you have a geographically specific forecast of likely devel
 ### A SUMMARY OF PROJECT???
 
 
-
+* ALERT 5 END
 
 
 # 16. Data Sources
