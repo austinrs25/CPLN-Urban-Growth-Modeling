@@ -883,9 +883,8 @@ Model6 <- glm(development_change ~ wetlands + forest  + farm +
 
 
 
-
-
-# ALERT 2
+ 
+ # ALERT 2 
 -----------------------
 
 TO DO: Austin and Abe, review selection of Model 6 and confirm that it’s the best choice for our forecast. This decision impacts rest of Section 5 below. Before determining, take a look at Section 12.2 in Michael’s RMD (note: I’ve split that section (12.2) into 5.2 and 5.3 in our version for clarity).
@@ -1041,7 +1040,7 @@ These diagnostics reveal the practical implications of our model and support its
 
 
 # ALERT 2 END
-
+ 
 
 
 # ALERT 3
@@ -1195,7 +1194,6 @@ This report is completed as an assignment for the University of Pennsylvania's S
 4. ALERT 4: In Step 7, **write narrative imapcts assessment** based on 2028 forecast results### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
 
 5. ALERT 5: **Draft Recommendations for Charlotte:**
--   **DELIVERABLE:** Key recommendations - use your planning expertise acquired through readings and lectures - give three key recommendations about growth allocation and management implications given the results of your forecast. This requires you to do some desk research about population and employment forecasts for your region (these are published by local MPOs) or about important local growth management issues. **NOTE:** Reference Step 15 in Michael's RMD file.
 
 6. **Discuss on Wedensday**
 -   Do we need Conclusion section?
