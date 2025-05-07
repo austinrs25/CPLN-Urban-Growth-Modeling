@@ -1134,7 +1134,7 @@ The resulting map displays the spatial distribution of expected development, pro
 
 # 7. Impact Assessment
 
-With the 2028 development forecast complete, we now assess the scale and distribution of predicted growth across the Charlotte Metropolitan Area. This step is essential for planners to anticipate infrastructure needs, protect sensitive lands, and align policies with projected development demand.
+With the 2027 development forecast complete, we now assess the scale and distribution of predicted growth across the Charlotte Metropolitan Area. This step is essential for planners to anticipate infrastructure needs, protect sensitive lands, and align policies with projected development demand.
 
 We begin by calculating the total amount of land projected to convert from undeveloped to developed. The forecasted cells classified as '1' are multiplied by the raster resolution to estimate area in square meters, square kilometers, and square miles.
 
@@ -1262,7 +1262,7 @@ This report is completed as an assignment for the University of Pennsylvania's S
 
 3. ALERT 3: **Revise Steps 6 and on** 
 
-4. ALERT 4: In Step 7, **write narrative imapcts assessment** based on 2028 forecast results### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
+4. ALERT 4: In Step 7, **write narrative imapcts assessment** based on 2027 forecast results### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
 
 5. ALERT 5: **Draft Recommendations for Charlotte:**
 
