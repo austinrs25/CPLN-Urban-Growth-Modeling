@@ -1127,7 +1127,7 @@ ggplot(data=dat_2027_preds) +
   geom_point(aes(x=xyC(dat_2027_preds)[,1], 
                  y=xyC(dat_2027_preds)[,2], colour = Prediction)) +
   geom_sf(data = studyAreaCounties, fill = "transparent")+
-  labs(title="Forecast 2: Development Predictions, 2027") + 
+  labs(title="Development Predictions, 2027") + 
   theme_void()
 ```
 The resulting map displays the spatial distribution of expected development, providing a basis for planning decisions that prioritize infrastructure alignment, environmental protection, and equitable growth management.
@@ -1221,7 +1221,7 @@ Based on the results of our urban growth model, we have developed the following 
 
 1. Incentivize development of green stormwater infrastructure
 
-Aging stormwater infrastructure is a known problem in the Charlotte MSA. With the city's rapidly growing population, stormwater management is all the more important to reduce the risk of combined sewer overflows during storm events. As Charlotte seeks to modernize its stormwater infrastructure, green infrastructure projects such as rain gardens should be incorporated to reduce strain on existing drainage systems. This type of infrastructure can also help offset the worsening of the urban heat island effect caused by tree canopy loss.
+Aging stormwater infrastructure is a known problem in the Charlotte MSA. With the city's rapidly growing population, stormwater management is all the more important to absorb runoff and reduce the risk of combined sewer overflows during storm events. As Charlotte seeks to modernize its stormwater infrastructure, green infrastructure projects such as rain gardens should be incorporated to reduce strain on existing drainage systems. This type of infrastructure can also help offset the worsening of the urban heat island effect caused by tree canopy loss.
 
 2. Expand the light rail system into Cabarrus County
 
@@ -1229,7 +1229,7 @@ Between 2010 and 2022, the population of Cabarrus County increased by 32.1%. Our
 
 3. Adjust zoning regulations to favor higher-density zoning within Mecklenburg County
 
-In our model, the majority of cells predicted to convert from undeveloped to developed between 2019 and 2027 are forested areas in Mecklenburg County (77/138 fishnet cells). As such, upzoning in Mecklenburg County is recommended to help accommodate population growth while limiting the destruction of forested areas.
+In our model, the majority of cells predicted to convert from undeveloped to developed between 2019 and 2027 are forested areas in Mecklenburg County. As such, upzoning in Mecklenburg County is recommended to help accommodate population growth while limiting the destruction of forested areas.
 
 ~some kind of cool last sentence that ties it all together? I don't think we need a conclusion section per se~
 
