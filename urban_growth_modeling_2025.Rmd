@@ -606,20 +606,6 @@ ggplot() +
   theme_void()
 ```
 
-
-
-
-
-# ALERT 1
-
------------------------
-
-TO DO: Include the hypothetical transport features for t3 forecast
-COMMENT: I think we’ll need to revise this step below (both the code and narrative) to reflect the inclusion of the new highway in the t3 forecast - I could be wrong that it is not this step though. Refer to Section 7.2 in Michael’s RMD for guidance. The best approach is likely to duplicate the current code to represent the "before" scenario, and then modify the copied version to reflect the "after" scenario with the updated highway input. This way, we preserve both versions for comparison.
-
------------------------
-
-
 **Calculate Distance to Highways:**
 
 We compute a new variable, `distance_highways_2011`, for each fishnet cell by measuring the straight-line distance to the nearest highway feature. This step uses `st_distance` and applies to centroid points derived from the fishnet. These distances are added back to the fishnet, enabling their use in modeling and spatial analysis. To maintain modeling consistency, we mirror this step for `t2`, creating `distance_highways_2019`. 
@@ -658,10 +644,6 @@ ggplot() +
        subtitle = "As fishnet centroids; Highways visualized in red") +
   theme_void()
 ```
-
-# ALERT 1 END
-
-
 
 **Calculate Spatial Lag of Development:**
 
@@ -879,19 +861,6 @@ Model6 <- glm(development_change ~ wetlands + forest  + farm +
               family="binomial"(link="logit"), data = datTrain) 
 ```
 
-
-
-
-
- 
- # ALERT 2 
------------------------
-
-TO DO: Austin and Abe, review selection of Model 6 and confirm that it’s the best choice for our forecast. This decision impacts rest of Section 5 below. Before determining, take a look at Section 12.2 in Michael’s RMD (note: I’ve split that section (12.2) into 5.2 and 5.3 in our version for clarity).
-
------------------------
-
-
 ## 5.3 Model Comparison and AIC Evaluation
 
 We **examine model summaries** and **compare Akaike Information Criterion (AIC) scores** to evaluate each model’s fit. While lower AIC values indicate better explanatory power, we ultimately select the model that balances accuracy, generalizability, and interpretability: **Model 6**.
@@ -1038,19 +1007,6 @@ ggplot() +
 
 These diagnostics reveal the practical implications of our model and support its use for guiding policy decisions in transportation planning and growth management.
 
-
-# ALERT 2 END
- 
-
-
-# ALERT 3
------------------------
-
-TO DO: Abe - Revise Steps 6 on
-
------------------------
-
-
 # 6. Forecasting
 
 Having validated the accuracy of our model, we now apply it to generate a forecast for urban development in the Charlotte region for the year 2027 using `t2` (2019) data. This forecast incorporates an updated `distance_highways_2019` variable which reflects a proposed new highway extension to US Route 521.
@@ -1187,35 +1143,14 @@ dat_2027_preds %>%
 
 ```
 
-# ALERT 4
-
------------------------
-
-DELIVERABLE: "Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?"
-
 This impact assessment provides the quantitative foundation needed to interpret the spatial and environmental implications of the proposed highway and forecasted development in the Charlotte MSA between 2019 and 2027. 
 
 The most notable prediction of this model is that **forested land** in Mecklenburg and Cabarrus counties is by far most likely to develop within the next decade. Tree canopy loss is a major concern for cities experiencing rapid development. Reduction in forested areas can negatively impact air quality and wildlife habitats, as well as contribute to the "urban heat island" effect.
 
 One additional concern raised by the model predictions is the high likelihood of development along the northwest border of Mecklenburg County, adjacent to the Catawba River. The Catawba River basin represents the primary water supply for the Charlotte MSA, and increased development alongside the river may increase the risk of water contamination from runoff.
 
------------------------
-
-# ALERT 4 END
-
-
-
-# ALERT 5
-
------------------------
 
 # 8. Key Recommendations
-
-**DRAFT RECOMMENDATIONS**
-
-**DELIVERABLE:** "Key recommendations - use your planning expertise acquired through readings and lectures - give three key recommendations about growth allocation and management implications given the results of your forecast. This requires you to do some desk research about population and employment forecasts for your region (these are published by local MPOs) or about important local growth management issues."
-
-**NOTE:** Reference Step 15 in Michael's RMD file.
 
 Based on the results of our urban growth model, we have developed the following recommendations to help manage urban growth in the Charlotte MSA over the next decade:
 
@@ -1231,16 +1166,6 @@ Between 2010 and 2022, the population of Cabarrus County increased by 32.1%. Our
 
 In our model, the majority of cells predicted to convert from undeveloped to developed between 2019 and 2027 are forested areas in Mecklenburg County. As such, upzoning in Mecklenburg County is recommended to help accommodate population growth while limiting the destruction of forested areas.
 
-~some kind of cool last sentence that ties it all together? I don't think we need a conclusion section per se~
-
------------------------
-
-# ALERT 5 END
-
-
-# ALERT 3 END
-
-
 # 9. Data Sources
 - **Land Cover Data**: Multi-Resolution Land Characteristics (MRLC) Consortium – [https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover](https://www.mrlc.gov/data?f%5B0%5D=category%3ALand%20Cover)
 - **Census Data**: United States Census Bureau – [https://api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html)
@@ -1250,28 +1175,3 @@ In our model, the majority of cells predicted to convert from undeveloped to dev
 
 # 10. Credits
 This report is completed as an assignment for the University of Pennsylvania's Spring 2025 course, **CPLN 6750/MUSA 6750: Land Use and Environmental Modeling**, taught by **Michael Fichman** in the Department of City and Regional Planning at the Stuart Weitzman School of Design. This analysis was completed by **Abe Doroshow and Austin Studner (Sutherland)**. The workflow in this Urban Growth Model was created for the course by Michael Fichman, the late Prof. Ken Steif, and Jenna Epstein, and adapted and inspired from the California Urban Futures Model, developed by Prof. Emeritus John Landis. Support was provided Michael Fichman and ChatGPT.
-
-
-
-# TO DO
-**(INCLUDES ALERTS)**
-
-1. ALERT 1: **Create the hypothetical transport features** for t3 forecast and **include where applicable** (Steps 3.4 AND ???)
-
-2. ALERT 2: In Step 5, **confirm Model 6 is best fit**
-
-3. ALERT 3: **Revise Steps 6 and on** 
-
-4. ALERT 4: In Step 7, **write narrative imapcts assessment** based on 2027 forecast results### Assessment of impact - where is development likely to occur? Are sensitive lands at risk? Where?
-
-5. ALERT 5: **Draft Recommendations for Charlotte:**
-
-6. **Discuss on Wedensday**
--   Do we need Conclusion section?
--   Confirm we have met **Deliverables**
--   Check we have fulfilled **Rubric**
--   Both separately run code from start to finish
--   Both separately read final RMD file
--   Rename and retitle file so its not the same as Michael's
--   **Export final RMD file** to HTML and **Upload to Canvas**
-
