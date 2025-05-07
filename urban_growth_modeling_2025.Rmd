@@ -1113,7 +1113,7 @@ dat_2019_updated <-
 Generate a new spatial object where each cell is labeled with its forecasted development status by 2027. Predictions are based on the modeled probability of change, with values above 0.17 flagged as likely to develop.
 
 ```{r}
-dat_2027_preds2 <- dat_2019_updated %>%
+dat_2027_preds <- dat_2019_updated %>%
     mutate(probs = predict(Model6, dat_2019_updated, type="response") ,
            Prediction = as.factor(ifelse(probs >= 0.17 ,1,0))) %>%
   st_as_sf()
@@ -1123,9 +1123,9 @@ dat_2027_preds2 <- dat_2019_updated %>%
 **Visualize 2027 Predictions:** Visualize the forecast using a spatial plot, identifying areas across Mecklenburg, Cabarrus, Gaston, and Union counties that are most at risk of development pressure.
 
 ```{r, warning = FALSE, message = FALSE, fig.height= 8, fig.width= 8 }
-ggplot(data=dat_2027_preds2) +
-  geom_point(aes(x=xyC(dat_2027_preds2)[,1], 
-                 y=xyC(dat_2027_preds2)[,2], colour = Prediction)) +
+ggplot(data=dat_2027_preds) +
+  geom_point(aes(x=xyC(dat_2027_preds)[,1], 
+                 y=xyC(dat_2027_preds)[,2], colour = Prediction)) +
   geom_sf(data = studyAreaCounties, fill = "transparent")+
   labs(title="Forecast 2: Development Predictions, 2027") + 
   theme_void()
