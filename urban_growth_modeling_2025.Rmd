@@ -1051,7 +1051,7 @@ TO DO: Abe - Revise Steps 6 on
 -----------------------
 
 
-# 6. Forcaseting
+# 6. Forecasting
 
 Having validated the accuracy of our model, we now apply it to generate a forecast for urban development in the Charlotte region for the year 2027. This forecast uses `t2` data (2019), incorporating the same variables used in training and also includes the updated ** ---------- ALERT distance-to-infrastructure ALERT ---------- ** layer reflecting the proposed new highway.
 
