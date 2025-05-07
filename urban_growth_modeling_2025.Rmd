@@ -54,11 +54,11 @@ This workflow closely mirrors the original instructional steps and includes:
 
 # 3. Feature Engineering
 
-We assume a new primairy highway is introduced in southeast Mecklenburg County to enhance commuting access and connection to the city. This infrastructure investment is expected to increase the likelihood of development in surrounding areas. Distance to this corridor is incorporated as a predictor variable in both the t2 model and the t3 forecast.
+We assume a new primary highway is introduced in southeast Mecklenburg County to enhance commuting access and connection to the city. This infrastructure investment is expected to increase the likelihood of development in surrounding areas. Distance to this corridor is incorporated as a predictor variable in both the t2 model and the t3 forecast.
 
-## 3.1. Setup Libraries, Functions, and Color Pallette
+## 3.1. Setup Libraries, Functions, and Color Palette
 
-**Load Libraries and Color Pallette:**
+**Load Libraries and Color Palette:**
 
 ```{r load_packages, message=FALSE, warning=FALSE, results = "hide"}
 library(tidyverse)
@@ -210,7 +210,7 @@ lc_2019_rs <- aggregate(lc_2019, fact = 30, fun = "modal")
 
 ```
 
-**Reclassify Land Cover as Developend and Undeveloped:**
+**Reclassify Land Cover as Developed and Undeveloped:**
 
 We reclassify the resampled rasters into two categories: developed (NLCD codes 21–24) and undeveloped (all other codes). This results in a simplified binary classification of each cell for both t1 and t2. 
 
@@ -232,7 +232,7 @@ developed_2019 <-
 
 ```
 
-**Detect Change from 2011 (t1) to 2018 (t2):**
+**Detect Change from 2011 (t1) to 2019 (t2):**
 
 Change is then detected using map algebra, identifying cells that were undeveloped in t1 and developed in t2. Cells with no change are assigned NA, allowing us to focus modeling efforts on the subset of cells where development did occur.
 
@@ -351,7 +351,7 @@ otherUndeveloped_2019 <- lc_2019_rs %in% c(52, 71, 31)
 water_2019 <- lc_2019_rs == 11
 ```
 
-For both t1 (2011) and t2 (2018), we construct binary raster layers representing the presence of each land use type. These rasters are named accordingly and compiled into lists.
+For both t1 (2011) and t2 (2019), we construct binary raster layers representing the presence of each land use type. These rasters are named accordingly and compiled into lists.
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -831,7 +831,7 @@ dat_2011 %>%
 
 
 # 5. Modeling
-In this stage, we create models to predict where development is most likely to occur in the Charlotte MSA. Using logistic regression, we explore how well different combinations of predictors can estimate the binary outcome of land cover change (undeveloped to developed) between 2011 and 2018.
+In this stage, we create models to predict where development is most likely to occur in the Charlotte MSA. Using logistic regression, we explore how well different combinations of predictors can estimate the binary outcome of land cover change (undeveloped to developed) between 2011 and 2019.
 
 ## 5.1 Splitting the Data
 
